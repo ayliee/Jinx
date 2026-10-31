@@ -207,7 +207,7 @@
     <a href="#get-random">GET /api/random</a>
     <a href="#get-search">GET /api/search</a>
     <a href="#get-filter">GET /api/filter</a>
-    <a href="#get-az-list">GET /api/az-list</a>
+    <a href="#get-az-list">GET /api/az.list</a>
     <a href="#get-browse">GET /api/browse</a>
     <a href="#get-schedule">GET /api/schedule</a>
     <a href="#get-anime">GET /api/anime</a>
@@ -407,14 +407,14 @@ npm start
 </div>
 
 <div class="endpoint" id="get-az-list">
-  <h3><span class="method">GET</span><code>/api/az-list</code></h3>
+  <h3><span class="method">GET</span><code>/api/az.list</code></h3>
   <p>Alphabetical catalog listing.</p>
   <table>
     <tr><th>Parameter</th><th>Description</th></tr>
     <tr><td>letter<span class="req">required</span></td><td>A to Z, <code>0-9</code>, or <code>other</code>.</td></tr>
     <tr><td>page</td><td>Page number.</td></tr>
   </table>
-  <pre><code>curl "https://YOUR-API/api/az-list?letter=A&amp;page=2"</code></pre>
+  <pre><code>curl "https://YOUR-API/api/az.list?letter=A&amp;page=2"</code></pre>
 </div>
 
 <div class="endpoint" id="get-browse">
@@ -729,7 +729,7 @@ https://YOUR-DEPLOYMENT/player?slug=one-piece-1999&amp;ep=12&amp;type=dub</code>
       <tr><th>Feed</th><th>Cache</th></tr>
       <tr><td><code>/api/search</code></td><td>30 seconds</td></tr>
       <tr><td><code>/api/home</code>, <code>/api/latest</code></td><td>60 seconds</td></tr>
-      <tr><td><code>/api/schedule</code>, <code>/api/episodes</code>, <code>/api/filter</code>, <code>/api/az-list</code>, <code>/api/browse</code></td><td>2 minutes</td></tr>
+      <tr><td><code>/api/schedule</code>, <code>/api/episodes</code>, <code>/api/filter</code>, <code>/api/az.list</code>, <code>/api/browse</code></td><td>2 minutes</td></tr>
       <tr><td><code>/api/servers</code></td><td>5 minutes</td></tr>
       <tr><td><code>/api/anime</code>, <code>/api/downloads</code></td><td>10 minutes</td></tr>
       <tr><td><code>/api/stream</code>, <code>/api/random</code></td><td>never cached</td></tr>

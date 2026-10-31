@@ -7,7 +7,7 @@ Scraping API for [anikototv.to](https://anikototv.to). Anime metadata, episode l
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository=https://github.com/ayliee/Jinx)
 
 1. Push this repo to GitHub and import it on Vercel (build settings on auto).
-2. Set env `PROXY_SECRET` to a long random string (fallback `jinx-proxy`).
+2. Set env `PROXY_SECRET` to a long random string (fallback `jinx.proxy`).
 3. Open the site root: the docs page loads, `/player` opens the watch page.
 
 Local: `npm start` then browse `http://localhost:8787`.
@@ -21,7 +21,7 @@ Local: `npm start` then browse `http://localhost:8787`.
 | `GET /api/random` | One random anime |
 | `GET /api/search?q=` | Title search |
 | `GET /api/filter` | Full catalog filter with genre, season, status, sort |
-| `GET /api/az-list?letter=A` | A to Z listing |
+| `GET /api/az.list?letter=A` | A to Z listing |
 | `GET /api/schedule` | Weekly release schedule, `?tz=` and `?date=` |
 | `GET /api/anime/:slug` | Full metadata, seasons, related, reactions |
 | `GET /api/episodes/:slug` | Episode list with sub/dub flags and MAL ids |

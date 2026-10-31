@@ -14,7 +14,7 @@ const routes = [
   ["GET", "/api/refresh", "api/refresh.js"],
   ["GET", "/api/search", "api/search.js"],
   ["GET", "/api/filter", "api/filter.js"],
-  ["GET", "/api/az-list", "api/az.list.js"],
+  ["GET", "/api/az.list", "api/az.list.js"],
   ["GET", "/api/schedule", "api/schedule.js"],
   ["GET", "/api/servers", "api/servers.js"],
   ["GET", "/api/stream", "api/stream.js"],

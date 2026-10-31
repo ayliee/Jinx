@@ -2,7 +2,6 @@
   "rewrites": [
     { "source": "/", "destination": "/api" },
     { "source": "/player", "destination": "/api/player" },
-    { "source": "/api/az-list", "destination": "/api/az.list" },
     { "source": "/api/anime/:slug", "destination": "/api/anime.info?slug=:slug" },
     { "source": "/api/episodes/:slug", "destination": "/api/episode.list?slug=:slug" },
     { "source": "/api/browse/:category/:value", "destination": "/api/browse.list?category=:category&value=:value" }
