@@ -11,8 +11,7 @@ const routes = [
   ["GET", "/api/home", "api/home.js"],
   ["GET", "/api/latest", "api/latest.js"],
   ["GET", "/api/random", "api/random.js"],
-    ["GET", "/api/refresh", "api/refresh.js"],
-    ["GET", "/api/debug", "api/debug.js"],
+  ["GET", "/api/refresh", "api/refresh.js"],
   ["GET", "/api/search", "api/search.js"],
   ["GET", "/api/filter", "api/filter.js"],
   ["GET", "/api/az.list", "api/az.list.js"],
@@ -26,6 +25,28 @@ const routes = [
   ["GET", /^\/api\/browse\/([^/]+)\/([^/]+)$/, "api/browse.list.js", ["category", "value"]],
 ];
 
+// Every handler is required statically so serverless bundlers inline the whole graph.
+const handlers = {
+  "api/index.js": require("./api/index.js"),
+  "api/player.js": require("./api/player.js"),
+  "api/health.js": require("./api/health.js"),
+  "api/home.js": require("./api/home.js"),
+  "api/latest.js": require("./api/latest.js"),
+  "api/random.js": require("./api/random.js"),
+  "api/refresh.js": require("./api/refresh.js"),
+  "api/search.js": require("./api/search.js"),
+  "api/filter.js": require("./api/filter.js"),
+  "api/az.list.js": require("./api/az.list.js"),
+  "api/browse.list.js": require("./api/browse.list.js"),
+  "api/schedule.js": require("./api/schedule.js"),
+  "api/servers.js": require("./api/servers.js"),
+  "api/stream.js": require("./api/stream.js"),
+  "api/downloads.js": require("./api/downloads.js"),
+  "api/anime.info.js": require("./api/anime.info.js"),
+  "api/episode.list.js": require("./api/episode.list.js"),
+  "api/proxy.js": require("./api/proxy.js"),
+};
+
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
   req.query = Object.fromEntries(url.searchParams);
@@ -37,7 +58,7 @@ const server = http.createServer((req, res) => {
       if (!match) continue;
       params.forEach((name, i) => (req.query[name] = decodeURIComponent(match[i + 1])));
     } else if (url.pathname !== path) continue;
-    return require(`./${file}`)(req, res);
+    return handlers[file](req, res);
   }
   res.writeHead(404, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ ok: false, error: "Not found" }));
