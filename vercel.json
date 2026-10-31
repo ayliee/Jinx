@@ -5,7 +5,7 @@
   "functions": {
     "local.js": {
       "maxDuration": 60,
-      "includeFiles": ["docs/index.html", "docs/player.html"]
+      "includeFiles": "docs/*.html"
     }
   }
 }
