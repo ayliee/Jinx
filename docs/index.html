@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jinx API Documentation</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --bg: #ffffff;
+    --sidebar-bg: #f6f8fa;
+    --border: #d8dee4;
+    --code-bg: #f6f8fa;
+    --code-border: #d0d7de;
+    --text: #1f2328;
+    --muted: #57606a;
+    --link: #0969da;
+    --accent: #09699a;
+    --green: #1a7f37;
+    --green-bg: #dafbe1;
+    --amber: #9a6700;
+    --amber-bg: #fff8c5;
+    --sidebar-w: 264px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    font-size: 0.86em;
+    background: rgba(175, 184, 193, 0.2);
+    border-radius: 6px;
+    padding: 0.15em 0.4em;
+    color: var(--text);
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 12px 0 18px;
+    position: relative;
+  }
+  pre code {
+    background: none; border: none; padding: 0;
+    font-size: 13.2px; line-height: 1.65; color: var(--text);
+  }
+  .tok-c { color: #6e7781; font-style: italic; }
+  .tok-s { color: #0a3069; }
+  .tok-n { color: #0550ae; }
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: #fff; color: var(--muted);
+    border: 1px solid var(--code-border); border-radius: 6px;
+    font-size: 11px; padding: 3px 9px; cursor: pointer;
+    font-family: inherit;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--muted); }
+
+  .sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0;
+    width: var(--sidebar-w);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 24px 14px 40px;
+    z-index: 40;
+  }
+  .brand { padding: 2px 10px 16px; }
+  .brand b { font-size: 17px; letter-spacing: -0.2px; display: block; }
+  .brand span { display: block; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .nav-group {
+    margin: 16px 0 4px; padding: 0 10px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .sidebar nav a {
+    display: block; padding: 5px 10px; margin: 1px 0;
+    color: var(--text); font-size: 13.2px;
+    border-radius: 6px; border-left: 2px solid transparent;
+  }
+  .sidebar nav a:hover { background: rgba(175, 184, 193, 0.25); text-decoration: none; }
+  .sidebar nav a.active {
+    background: #ddf4ff;
+    border-left-color: var(--link);
+    color: var(--link); font-weight: 600;
+  }
+  .main {
+    margin-left: var(--sidebar-w);
+    max-width: 880px;
+    padding: 46px 56px 110px;
+  }
+  h1 {
+    font-size: 31px; font-weight: 700; letter-spacing: -0.4px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 18px;
+    scroll-margin-top: 20px;
+  }
+  h2 {
+    font-size: 23px; font-weight: 700; letter-spacing: -0.2px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+    margin: 46px 0 16px; scroll-margin-top: 20px;
+  }
+  h3 { font-size: 17.5px; font-weight: 700; margin: 26px 0 8px; scroll-margin-top: 20px; }
+  h4 { font-size: 15.5px; font-weight: 700; margin: 20px 0 6px; }
+  p { margin: 8px 0 12px; }
+  .lead { color: var(--text); }
+  blockquote {
+    border-left: 4px solid var(--border);
+    padding: 2px 16px;
+    margin: 14px 0;
+    color: var(--muted);
+    font-style: italic;
+  }
+  blockquote p { margin: 6px 0; }
+  .callout {
+    border-left: 4px solid var(--border);
+    padding: 2px 16px; margin: 16px 0;
+    color: var(--muted); font-style: italic;
+  }
+  .callout.warn { border-left-color: #d4a72c; }
+  .callout p { margin: 6px 0; }
+
+  ul.plain { margin: 8px 0 14px 22px; }
+  ul.plain li { margin: 5px 0; }
+
+  table {
+    width: 100%; border-collapse: collapse;
+    margin: 12px 0 18px; font-size: 14px;
+  }
+  th {
+    text-align: left; padding: 8px 10px;
+    border: 1px solid var(--border); background: var(--sidebar-bg);
+    font-weight: 700;
+  }
+  td {
+    padding: 8px 10px;
+    border: 1px solid var(--border); vertical-align: top;
+  }
+  td:first-child { white-space: nowrap; }
+
+  .method {
+    display: inline-block; font-size: 10.5px; font-weight: 800; letter-spacing: 0.7px;
+    color: var(--green); background: var(--green-bg);
+    border: 1px solid rgba(26, 127, 55, 0.25);
+    padding: 2px 8px; border-radius: 999px; vertical-align: 3px; margin-right: 9px;
+    font-family: inherit;
+  }
+  .req {
+    color: var(--amber); background: var(--amber-bg);
+    font-size: 10.5px; font-weight: 700;
+    border-radius: 999px; padding: 1px 7px; margin-left: 6px;
+    vertical-align: 1px;
+  }
+  .endpoint { scroll-margin-top: 20px; }
+  .endpoint h3 { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
+  .endpoint h3 code { font-size: 15.5px; background: none; padding: 0; font-weight: 700; }
+  .steps > .step { margin: 18px 0; }
+  .steps > .step > h4 { margin-top: 22px; }
+
+  .menu-btn {
+    display: none; position: fixed; top: 12px; left: 12px; z-index: 60;
+    background: #fff; color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 7px 12px; font-size: 13px; cursor: pointer;
+  }
+  .footer {
+    margin-top: 70px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 13px;
+  }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #c8cdd4; border-radius: 8px; }
+  @media (max-width: 960px) {
+    .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; box-shadow: none; }
+    .sidebar.open { transform: none; box-shadow: 4px 0 24px rgba(0,0,0,0.12); }
+    .main { margin-left: 0; padding: 62px 20px 90px; }
+    .menu-btn { display: block; }
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">Menu</button>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <b>Jinx API</b>
+    <span>Documentation v1.0</span>
+  </div>
+  <nav id="nav">
+    <div class="nav-group">Getting Started</div>
+    <a href="#introduction">Introduction</a>
+    <a href="#quick-start">Quick start</a>
+    <a href="#deploy">Deploy on Vercel</a>
+    <a href="#conventions">Response format</a>
+    <div class="nav-group">API Reference</div>
+    <a href="#get-home">GET /api/home</a>
+    <a href="#get-random">GET /api/random</a>
+    <a href="#get-search">GET /api/search</a>
+    <a href="#get-filter">GET /api/filter</a>
+    <a href="#get-az-list">GET /api/az-list</a>
+    <a href="#get-browse">GET /api/browse</a>
+    <a href="#get-schedule">GET /api/schedule</a>
+    <a href="#get-anime">GET /api/anime</a>
+    <a href="#get-episodes">GET /api/episodes</a>
+    <a href="#get-servers">GET /api/servers</a>
+    <a href="#get-stream">GET /api/stream</a>
+    <a href="#get-downloads">GET /api/downloads</a>
+    <a href="#get-proxy">GET /api/proxy</a>
+    <a href="#get-health">GET /api/health</a>
+    <div class="nav-group">Guides</div>
+    <a href="#integration">Integration guide</a>
+    <a href="#player">Player setup</a>
+    <a href="#errors">Error handling</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+</aside>
+
+<main class="main">
+
+<h1 id="top">Jinx API</h1>
+
+<blockquote>
+  <p>Anime episodes, metadata, schedules and streams, normalized into one clean JSON API. Pure JavaScript scraping layer, signed HLS media proxy, ready for Vercel.</p>
+</blockquote>
+
+<p>Self-hosted and Vercel-ready service that scrapes <code>anikototv.to</code> for catalog metadata, episode lists and stream tokens, then normalizes everything into one fast JSON API with playable HLS playlists, subtitles and skip times. No API key, no npm dependencies.</p>
+
+<h2 id="introduction">Introduction</h2>
+<p class="lead">Everything the source site exposes is here as clean JSON, built for direct use in a front end. You can ship a full anime streaming experience with plain <code>fetch</code>.</p>
+<ul class="plain">
+  <li><strong>Metadata.</strong> Titles in English and Japanese, synopsis, genres, studios, scores, ratings, seasons and related series.</li>
+  <li><strong>Episodes and servers.</strong> Full episode lists with sub/dub flags, then every streaming server available per episode.</li>
+  <li><strong>Streaming.</strong> HLS master playlists with quality variants, multi language subtitles and skip intro/outro times.</li>
+  <li><strong>Discovery.</strong> Home page rails, search, advanced filters, A to Z listing, genres, weekly schedule and random picks.</li>
+</ul>
+<div class="callout warn"><p>This project is for educational purposes. All anime content, names and media belong to their respective owners. Respect the source site and keep request volume reasonable.</p></div>
+
+<h2 id="quick-start">Quick start</h2>
+<p class="lead">Run it locally or deploy it, then call any endpoint. Everything is plain GET requests returning JSON.</p>
+<pre><code>git clone &lt;your repo&gt; jinx
+cd jinx
+npm start
+# local server at http://localhost:8787</code></pre>
+<p>First live call:</p>
+<pre><code>curl "http://localhost:8787/api/search?q=naruto"</code></pre>
+<pre><code>{
+  "ok": true,
+  "data": {
+    "query": "naruto",
+    "results": [
+      {
+        "slug": "naruto-eybxz",
+        "title": "Naruto",
+        "titleJp": "Naruto",
+        "poster": "https://cdn.anipixcdn.co/thumbnail/71a3cb....jpg",
+        "type": "TV",
+        "score": "7.89",
+        "rating": "PG-13"
+      }
+    ]
+  }
+}</code></pre>
+<p>API index lives at <code>https://YOUR-DEPLOYMENT/api</code> — docs at <code>/</code> — health at <code>/api/health</code>.</p>
+
+<h2 id="deploy">Deploy on Vercel</h2>
+<div class="steps">
+  <div class="step">
+    <h4>1. Push the project to a Git repository</h4>
+    <p>GitHub, GitLab or Bitbucket. The repo root must contain the <code>api</code> folder and <code>vercel.json</code>.</p>
+  </div>
+  <div class="step">
+    <h4>2. Import it on Vercel</h4>
+    <p>Open <a href="https://vercel.com/new" target="_blank" rel="noopener">vercel.com/new</a>, import the repo and keep every build setting on auto. Vercel detects the <code>api</code> folder on its own.</p>
+    <pre><code>npx vercel --prod
+# routes / -&gt; api/index.js, every /api/* path becomes a function</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Deploy and point your web at it</h4>
+    <p>You get a URL like <code>https://jinx.vercel.app</code>. Opening it shows this docs page. Every endpoint sends <code>Access-Control-Allow-Origin: *</code>, so a browser app on any domain can call them directly.</p>
+  </div>
+</div>
+
+<h2 id="conventions">Response format</h2>
+<p class="lead">Every endpoint returns the same envelope. Success responses carry <code>ok: true</code> and a <code>data</code> object. Failures carry <code>ok: false</code> and a human readable <code>error</code> string, with a matching HTTP status code.</p>
+<pre><code>// success
+{ "ok": true, "data": { /* payload */ } }
+
+// failure
+{ "ok": false, "error": "Missing query parameter q" }</code></pre>
+<p>A typical item object inside lists looks like this. Fields that do not apply to a title arrive as <code>null</code> so the shape stays predictable:</p>
+<pre><code>{
+  "id": "9054",
+  "slug": "a-tale-of-the-secret-saint-7aebe",
+  "episode": "6",
+  "title": "A Tale of the Secret Saint",
+  "titleJp": "Tensei shita Daiseijo wa, ...",
+  "poster": "https://cdn.anipixcdn.co/thumbnail/4ed8034d....jpg",
+  "episodes": { "sub": "6" },
+  "type": "TV",
+  "score": "7.5",
+  "rating": "PG-13"
+}</code></pre>
+
+<h2 id="api-reference">API Reference</h2>
+<p class="lead">Fourteen endpoints cover everything the source exposes. All of them accept only GET requests.</p>
+
+<div class="endpoint" id="get-home">
+  <h3><span class="method">GET</span><code>/api/home</code></h3>
+  <p>The full home page. Spotlight slider, latest episodes, trending, new releases, newly added, just completed and the top anime charts for day, week and month.</p>
+  <p>No parameters.</p>
+  <pre><code>curl "https://YOUR-API/api/home"</code></pre>
+  <pre><code>{
+  "ok": true,
+  "data": {
+    "spotlight": [ { "rank": "#1 Spotlight", "slug": "black-clover-season-2", ... } ],
+    "latestEpisodes": [ { "slug": "a-tale-of-the-secret-saint-7aebe", "episode": "6", ... } ],
+    "trending": [ ... ],
+    "newRelease": [ ... ],
+    "newAdded": [ ... ],
+    "completed": [ ... ],
+    "topAnime": {
+      "day":   [ ... ],
+      "week":  [ ... ],
+      "month": [ ... ]
+    }
+  }
+}</code></pre>
+</div>
+
+<div class="endpoint" id="get-random">
+  <h3><span class="method">GET</span><code>/api/random</code></h3>
+  <p>One random anime from the catalog. Great for a surprise me button.</p>
+  <pre><code>curl "https://YOUR-API/api/random"</code></pre>
+</div>
+
+<div class="endpoint" id="get-search">
+  <h3><span class="method">GET</span><code>/api/search</code></h3>
+  <p>Instant title search, the same one the site search box uses.</p>
+  <table>
+    <tr><th>Parameter</th><th>Description</th></tr>
+    <tr><td>q<span class="req">required</span></td><td>The title to search for, for example <code>one piece</code>.</td></tr>
+  </table>
+  <pre><code>curl "https://YOUR-API/api/search?q=naruto"</code></pre>
+</div>
+
+<div class="endpoint" id="get-filter">
+  <h3><span class="method">GET</span><code>/api/filter</code></h3>
+  <p>Advanced browsing with the full filter set. Combine as many parameters as you like. List parameters accept comma separated values, and a negative genre id excludes that genre.</p>
+  <table>
+    <tr><th>Parameter</th><th>Description</th></tr>
+    <tr><td>keyword</td><td>Free text title search.</td></tr>
+    <tr><td>genre</td><td>Genre ids or slugs, comma separated. Prefix an id with <code>-</code> to exclude it.</td></tr>
+    <tr><td>type</td><td>TV, Movie, OVA, ONA, Special, Music, TV_SHORT.</td></tr>
+    <tr><td>season</td><td>spring, summer, fall, winter.</td></tr>
+    <tr><td>year</td><td>Four digit year or list of years.</td></tr>
+    <tr><td>status</td><td>finished-airing, currently-airing, not-yet-aired.</td></tr>
+    <tr><td>language</td><td>sub or dub.</td></tr>
+    <tr><td>rating</td><td>G, PG, PG-13, R, R+, Rx.</td></tr>
+    <tr><td>source</td><td>manga, original, light_novel, novel, visual_novel, and others.</td></tr>
+    <tr><td>ep_min / ep_max</td><td>Episode count range.</td></tr>
+    <tr><td>sort</td><td>default, latest-updated, latest-added, score, name-az, release-date, most-viewed, number_of_episodes.</td></tr>
+    <tr><td>page</td><td>Page number, 30 titles per page.</td></tr>
+  </table>
+  <pre><code>curl "https://YOUR-API/api/filter?type=TV&amp;status=currently-airing&amp;sort=score&amp;page=1"</code></pre>
+  <pre><code>{
+  "ok": true,
+  "data": {
+    "items": [ /* title cards */ ],
+    "pagination": { "page": 1, "totalPages": 12, "hasPrev": false, "hasNext": true }
+  }
+}</code></pre>
+</div>
+
+<div class="endpoint" id="get-az-list">
+  <h3><span class="method">GET</span><code>/api/az-list</code></h3>
+  <p>Alphabetical catalog listing.</p>
+  <table>
+    <tr><th>Parameter</th><th>Description</th></tr>
+    <tr><td>letter<span class="req">required</span></td><td>A to Z, <code>0-9</code>, or <code>other</code>.</td></tr>
+    <tr><td>page</td><td>Page number.</td></tr>
+  </table>
+  <pre><code>curl "https://YOUR-API/api/az-list?letter=A&amp;page=2"</code></pre>
+</div>
+
+<div class="endpoint" id="get-browse">
+  <h3><span class="method">GET</span><code>/api/browse/:category/:value</code></h3>
+  <p>Browse by a single facet. Categories are <code>genre</code>, <code>studio</code>, <code>producer</code> and <code>status</code>. The value is the slug shown on the site, for example <code>action</code>, <code>cloverworks</code> or <code>currently-airing</code>.</p>
+  <table>
+    <tr><th>Parameter</th><th>Description</th></tr>
+    <tr><td>page</td><td>Page number.</td></tr>
+  </table>
+  <pre><code>curl "https://YOUR-API/api/browse/genre/action?page=1"</code></pre>
+</div>
+
+<div class="endpoint" id="get-schedule">
+  <h3><span class="method">GET</span><code>/api/schedule</code></h3>
+  <p>Weekly airing schedule in your timezone. Without a date you get the rest of the current week. With a date you get that single day.</p>
+  <table>
+    <tr><th>Parameter</th><th>Description</th></tr>
+    <tr><td>tz</td><td>Timezone offset in hours, for example <code>5</code> for Pakistan Standard Time. Defaults to the server offset.</td></tr>
+    <tr><td>date</td><td>Optional day to inspect, for example <code>2026-10-26</code>.</td></tr>
+  </table>
+  <pre><code>curl "https://YOUR-API/api/schedule?tz=5&amp;date=2026-10-31"</code></pre>
+  <pre><code>{
+  "ok": true,
+  "data": {
+    "week": [ { "timestamp": 1792998000, "label": "Mon 26 Oct" }, ... ],
+    "items": [
+      {
+        "time": "12:30 AM",
+        "airing": 1793431800,
+        "aired": false,
+        "slug": "shin-chan-xrihv",
+        "episode": "1359",
+        "type": "sub",
+        "title": "Shin Chan",
+        "genres": ["Comedy", "Kids"]
+      }
+    ]
+  }
+}</code></pre>
+</div>
+
+<div class="endpoint" id="get-anime">
+  <h3><span class="method">GET</span><code>/api/anime/:slug</code></h3>
+  <p>Full metadata page for one anime. The slug is the tail of any watch URL on the site, for example <code>one-piece-odmau</code>.</p>
+  <pre><code>curl "https://YOUR-API/api/anime/the-elusive-samurai-season-2-359bc"</code></pre>
+  <pre><code>{
+  "ok": true,
+  "data": {
+    "id": "8957",
+    "slug": "the-elusive-samurai-season-2-359bc",
+    "title": "The Elusive Samurai Season 2",
+    "titleJp": "Nige Jouzu no Wakagimi 2nd Season",
+    "otherNames": ["Nigewaka"],
+    "poster": "https://cdn.anipixcdn.co/thumbnail/7f57099b....jpg",
+    "banner": "https://s4.anilist.co/file/anilistcdn/....jpg",
+    "rating": "R",
+    "quality": "HD",
+    "hasSub": true,
+    "hasDub": true,
+    "synopsis": "Second season of Nige Jouzu no Wakagimi.",
+    "type": "TV",
+    "premiered": "SUMMER 2026",
+    "aired": "Jul 17, 2026 to ?",
+    "status": "Finished Airing",
+    "genres": [ { "slug": "adventure", "name": "Adventure" }, ... ],
+    "score": "7.51",
+    "duration": "? min",
+    "episodeCount": "12",
+    "studios": [ { "slug": "cloverworks", "name": "CloverWorks" } ],
+    "producers": [ { "slug": "aniplex", "name": "Aniplex" } ],
+    "ratingScore": "7.51",
+    "reviews": "91145",
+    "seasons": [ /* other seasons when the show has any */ ],
+    "related": [ { "relation": "sequel", "slug": "...", "title": "..." }, ... ],
+    "reactions": [ { "key": "peak", "emoji": "🔥", "label": "Peak", "count": 179 }, ... ]
+  }
+}</code></pre>
+</div>
+
+<div class="endpoint" id="get-episodes">
+  <h3><span class="method">GET</span><code>/api/episodes/:slug</code></h3>
+  <p>The complete episode list of a show. Each entry carries the ids you need for <code>/api/servers</code>, the MAL id and the release timestamp you need for <code>/api/downloads</code>, and plain flags telling you which audio tracks exist.</p>
+  <pre><code>curl "https://YOUR-API/api/episodes/the-elusive-samurai-season-2-359bc"</code></pre>
+  <pre><code>{
+  "ok": true,
+  "data": {
+    "animeId": "8957",
+    "episodes": [
+      {
+        "id": "134206",
+        "number": "1",
+        "slug": "1",
+        "malId": "60059",
+        "timestamp": 1784307461,
+        "sub": true,
+        "dub": true,
+        "ids": "Snp2RnY0anptd3dxdE1OejhZeXJFNk..."
+      }
+    ]
+  }
+}</code></pre>
+</div>
+
+<div class="endpoint" id="get-servers">
+  <h3><span class="method">GET</span><code>/api/servers</code></h3>
+  <p>Streaming servers for one episode, grouped by audio type. Pass the <code>ids</code> value you got from the episodes endpoint.</p>
+  <table>
+    <tr><th>Parameter</th><th>Description</th></tr>
+    <tr><td>ids<span class="req">required</span></td><td>The <code>ids</code> field of the episode.</td></tr>
+  </table>
+  <pre><code>curl "https://YOUR-API/api/servers?ids=Snp2RnY0anptd3dxdE1OejhZ..."</code></pre>
+  <pre><code>{
+  "ok": true,
+  "data": {
+    "groups": [
+      {
+        "type": "sub",
+        "servers": [
+          { "name": "HD-1", "epId": "135559", "cmid": "animixplay-fqsqfvdf4u", "svId": "323", "linkId": "MTF1dkFtaW9BRT..." },
+          { "name": "Vidstream-1", "svId": "1a7", "linkId": "..." }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+</div>
+
+<div class="endpoint" id="get-stream">
+  <h3><span class="method">GET</span><code>/api/stream</code></h3>
+  <p>The heart of the API. Resolves a playable stream with quality variants, subtitles and skip times. There are three ways to call it, from simple to granular.</p>
+  <table>
+    <tr><th>Parameter</th><th>Description</th></tr>
+    <tr><td>slug + episode<span class="req">required*</span></td><td>The show slug and the episode number or slug. Simplest form.</td></tr>
+    <tr><td>ids<span class="req">alt</span></td><td>An episode <code>ids</code> value. Skips the episode list lookup.</td></tr>
+    <tr><td>link<span class="req">alt</span></td><td>A <code>linkId</code> from the servers endpoint. Lowest level.</td></tr>
+    <tr><td>server</td><td>Optional server picker, matches <code>svId</code> or the name like <code>HD-1</code>. Defaults to the first one.</td></tr>
+    <tr><td>type</td><td>Optional audio filter, <code>sub</code> or <code>dub</code>.</td></tr>
+  </table>
+  <pre><code>curl "https://YOUR-API/api/stream?slug=the-elusive-samurai-season-2-359bc&amp;episode=12"</code></pre>
+  <pre><code>{
+  "ok": true,
+  "data": {
+    "episode": { "number": "12", "sub": true, "dub": false },
+    "server": { "name": "HD-1", "svId": "323", "type": "sub" },
+    "embed": "https://megaplay.buzz/stream/s-2/236994/sub?s=tcdn",
+    "player": { "id": "180084", "cdn": "tcdn", "label": 4 },
+    "thumbnail": "https://de3bv.eclipseharbor.world/.../thumbnail.jpg",
+    "skip": {
+      "intro": { "start": 0, "end": 128 },
+      "outro": { "start": 1322, "end": 1417 }
+    },
+    "master": {
+      "file": "https://megap.shiora.top/.../master.m3u8",
+      "proxy": "https://YOUR-API/api/proxy?u=https%3A%2F%2F..."
+    },
+    "sources": [
+      { "quality": "1080p", "resolution": "1920x1080", "bandwidth": 5500000,
+        "file": "https://megap.shiora.top/.../index-f1.m3u8",
+        "proxy": "https://YOUR-API/api/proxy?u=..." },
+      { "quality": "720p", "resolution": "1280x720", "bandwidth": 2800000, ... },
+      { "quality": "480p", "resolution": "640x360", "bandwidth": 800000, ... }
+    ],
+    "subtitles": [
+      { "label": "English", "kind": "captions", "default": true,
+        "file": "https://de3bv.eclipseharbor.world/.../track_0_eng.vtt",
+        "proxy": "https://YOUR-API/api/proxy?u=..." },
+      { "label": "Arabic", "kind": "captions", ... }
+    ]
+  }
+}</code></pre>
+  <div class="callout"><p>Each stream URL comes in two flavors. <code>file</code> is the raw CDN link and <code>proxy</code> is the same link routed through <code>/api/proxy</code>, carrying a signature. The CDN blocks hotlinking, so players should load the <code>proxy</code> URLs as they are. Every proxy URL returned here is signed and ready to use.</p></div>
+</div>
+
+<div class="endpoint" id="get-downloads">
+  <h3><span class="method">GET</span><code>/api/downloads</code></h3>
+  <p>Direct download links per quality when the catalog provides them. Take all three values from the episodes endpoint.</p>
+  <table>
+    <tr><th>Parameter</th><th>Description</th></tr>
+    <tr><td>mal<span class="req">required</span></td><td>The <code>malId</code> of the episode.</td></tr>
+    <tr><td>episode<span class="req">required</span></td><td>The episode number.</td></tr>
+    <tr><td>timestamp<span class="req">required</span></td><td>The episode release timestamp.</td></tr>
+  </table>
+  <pre><code>curl "https://YOUR-API/api/downloads?mal=60059&amp;episode=12&amp;timestamp=1790957437"</code></pre>
+  <pre><code>{
+  "ok": true,
+  "data": [
+    { "source": "Kiwi", "type": "sub", "quality": "360p", "url": "https://pahe.nekostream.site/jrevX" },
+    { "source": "Kiwi", "type": "sub", "quality": "720p", "url": "https://pahe.nekostream.site/SPngN" },
+    { "source": "Kiwi", "type": "sub", "quality": "1080p", "url": "https://pahe.nekostream.site/UcpyH" }
+  ]
+}</code></pre>
+</div>
+
+<div class="endpoint" id="get-proxy">
+  <h3><span class="method">GET</span><code>/api/proxy</code></h3>
+  <p>Small media proxy that forwards requests to the streaming CDN with the correct headers. It also rewrites m3u8 playlists so every segment and subtitle stays inside the proxy. This is what makes in browser playback possible.</p>
+  <table>
+    <tr><th>Parameter</th><th>Description</th></tr>
+    <tr><td>u<span class="req">required</span></td><td>The full https CDN URL to proxy.</td></tr>
+    <tr><td>s<span class="req">required</span></td><td>Signature generated by the API. Every <code>proxy</code> URL from <code>/api/stream</code> already carries one, so you never build these links by hand.</td></tr>
+  </table>
+  <pre><code>curl "https://YOUR-API/api/proxy?u=https%3A%2F%2Fmegap.shiora.top%2F...%2Fmaster.m3u8&amp;s=AsV7ZyyTe9vOA3Iqt8Plng..."</code></pre>
+</div>
+
+<div class="endpoint" id="get-health">
+  <h3><span class="method">GET</span><code>/api/health</code></h3>
+  <p>Uptime and version check.</p>
+  <pre><code>curl "https://YOUR-API/api/health"</code></pre>
+</div>
+
+<h2 id="integration">Integration guide</h2>
+<p class="lead">Follow these steps to build a working streaming web app. Each step is a single call. Replace <code>API</code> with your deployment URL.</p>
+<div class="steps">
+  <div class="step">
+    <h4>1. Set your base URL once</h4>
+    <p>Keep one constant in your front end so you can move between local and production with one edit.</p>
+    <pre><code>const API = "https://YOUR-API";</code></pre>
+  </div>
+  <div class="step">
+    <h4>2. Fill the home screen</h4>
+    <p>Use <code>/api/home</code> to render the spotlight slider, the latest episode grid and the top charts in one round trip.</p>
+    <pre><code>const home = await fetch(`${API}/api/home`).then(r =&gt; r.json());
+renderSpotlight(home.data.spotlight);
+renderGrid(home.data.latestEpisodes);</code></pre>
+  </div>
+  <div class="step">
+    <h4>3. Let users search</h4>
+    <p>Call <code>/api/search</code> on each keystroke, with a small debounce. The result cards carry everything you need for a suggestion dropdown.</p>
+    <pre><code>async function search(q) {
+  const res = await fetch(`${API}/api/search?q=${encodeURIComponent(q)}`).then(r =&gt; r.json());
+  return res.data.results;
+}</code></pre>
+  </div>
+  <div class="step">
+    <h4>4. Build the detail page</h4>
+    <p>When a title is picked, call <code>/api/anime/:slug</code> and <code>/api/episodes/:slug</code> together.</p>
+    <pre><code>const slug = "the-elusive-samurai-season-2-359bc";
+const [info, eps] = await Promise.all([
+  fetch(`${API}/api/anime/${slug}`).then(r =&gt; r.json()),
+  fetch(`${API}/api/episodes/${slug}`).then(r =&gt; r.json()),
+]);
+console.log(info.data.title, info.data.synopsis, eps.data.episodes.length);</code></pre>
+  </div>
+  <div class="step">
+    <h4>5. Resolve a stream when the user presses play</h4>
+    <p>One call gives you the playlist, every quality variant, subtitles and skip markers.</p>
+    <pre><code>const stream = await fetch(
+  `${API}/api/stream?slug=${slug}&amp;episode=12`
+).then(r =&gt; r.json());
+
+const master = stream.data.master.proxy;   // play this
+const skip = stream.data.skip;             // skip intro and outro</code></pre>
+  </div>
+  <div class="step">
+    <h4>6. Offer server choice and downloads</h4>
+    <p>Use <code>/api/servers</code> so the user can switch between HD, Vidstream and others, then pass the chosen <code>linkId</code> to <code>/api/stream?link=</code>. Use <code>/api/downloads</code> for an offline download menu.</p>
+    <pre><code>const servers = await fetch(`${API}/api/servers?ids=${ep.ids}`).then(r =&gt; r.json());
+const stream = await fetch(`${API}/api/stream?link=${servers.data.groups[0].servers[1].linkId}`).then(r =&gt; r.json());</code></pre>
+  </div>
+</div>
+
+<h2 id="player">Player setup</h2>
+<p class="lead">Streams are HLS, so use HLS.js in browsers without native HLS support. Always load the <code>proxy</code> URL and the CDN will accept the request.</p>
+<pre><code>&lt;video id="player" controls width="100%"&gt;&lt;/video&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/hls.js@latest"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const video = document.getElementById("player");
+  const playlist = stream.data.master.proxy;
+
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(playlist);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () =&gt; video.play());
+  } else {
+    video.src = playlist;
+  }
+
+  // optional: skip intro and outro
+  video.addEventListener("timeupdate", () =&gt; {
+    const intro = stream.data.skip.intro;
+    if (intro &amp;&amp; video.currentTime &gt; intro.start &amp;&amp; video.currentTime &lt; intro.end) {
+      video.currentTime = intro.end;
+    }
+  });
+&lt;/script&gt;</code></pre>
+<p>Subtitles work with HLS.js subtitle tracks or with a manual <code>&lt;track&gt;</code> element pointing at <code>subtitles[n].proxy</code>:</p>
+<pre><code>for (const sub of stream.data.subtitles) {
+  const track = document.createElement("track");
+  track.kind = "subtitles";
+  track.label = sub.label;
+  track.src = sub.proxy;
+  video.appendChild(track);
+}</code></pre>
+
+<h2 id="errors">Error handling</h2>
+<p class="lead">Check the <code>ok</code> field first. A robust client looks like this:</p>
+<pre><code>async function call(path) {
+  const res = await fetch(`${API}${path}`);
+  const body = await res.json();
+  if (!body.ok) throw new Error(body.error);
+  return body.data;
+}</code></pre>
+<table>
+  <tr><th>Status</th><th>Meaning</th></tr>
+  <tr><td>200</td><td>Success, <code>ok: true</code>.</td></tr>
+  <tr><td>400</td><td>Missing or invalid parameter. The error text names the fix.</td></tr>
+  <tr><td>403</td><td>The proxy URL is unsigned or tampered with. Use the links from <code>/api/stream</code>.</td></tr>
+  <tr><td>404</td><td>Unknown slug, episode or server.</td></tr>
+  <tr><td>500+</td><td>The source site failed or changed. Retry once, then surface the message.</td></tr>
+</table>
+
+<h2 id="faq">FAQ</h2>
+<h4>Do I need an API key?</h4>
+<p>No. Every endpoint is open and CORS enabled.</p>
+<h4>Why does playback need the proxy?</h4>
+<p>The video CDN checks the request origin and blocks hotlinks. <code>/api/proxy</code> forwards the media with valid headers and rewrites playlists on the fly.</p>
+<h4>Can I use this on mobile apps?</h4>
+<p>Yes. The proxy URLs are plain HLS playlists that ExoPlayer, AVPlayer and hls.js all understand.</p>
+<h4>How much can I cache?</h4>
+<p>All GET responses already send <code>Cache-Control</code>. Metadata rarely changes, so cache aggressively on your side too.</p>
+<h4>The stream returned no sources.</h4>
+<p>That episode is very new or the server rotated. Try another server via <code>/api/servers</code> or retry in a minute.</p>
+<h4>Is there a rate limit?</h4>
+<p>None is enforced, but stay under a few requests per second so the source stays healthy for everyone.</p>
+
+<div class="footer">Jinx API is an independent, open source scraping layer built for learning and development. It is not affiliated with anikototv.to. Built with pure Node.js, no dependencies.</div>
+
+</main>
+
+<script>
+  const sidebar = document.getElementById("sidebar");
+  const menuBtn = document.getElementById("menuBtn");
+  menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+  document.getElementById("nav").addEventListener("click", () => sidebar.classList.remove("open"));
+
+  const links = [...document.querySelectorAll("#nav a")];
+  const targets = links.map(a => document.querySelector(a.getAttribute("href"))).filter(Boolean);
+  const spy = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + entry.target.id));
+    }
+  }, { rootMargin: "-10% 0px -75% 0px" });
+  targets.forEach(t => spy.observe(t));
+
+  const highlight = (el) => {
+    el.innerHTML = el.innerHTML.replace(
+      /(\/\/[^\n]*|&lt;!--[\s\S]*?--&gt;|(?<=^|\n)\s*#[^\n]*)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|\b(\d+(?:\.\d+)?)\b/g,
+      (m, c, s, n) => {
+        if (c) return '<span class="tok-c">' + c + "</span>";
+        if (s) return '<span class="tok-s">' + s + "</span>";
+        if (n) return '<span class="tok-n">' + n + "</span>";
+        return m;
+      }
+    );
+  };
+
+  document.querySelectorAll("pre").forEach(pre => {
+    const code = pre.querySelector("code");
+    if (code) highlight(code);
+    const btn = document.createElement("button");
+    btn.className = "copy-btn";
+    btn.textContent = "Copy";
+    btn.addEventListener("click", () => {
+      navigator.clipboard.writeText(code ? code.innerText : pre.innerText);
+      btn.textContent = "Copied";
+      setTimeout(() => (btn.textContent = "Copy"), 1200);
+    });
+    pre.appendChild(btn);
+  });
+</script>
+</body>
+</html>

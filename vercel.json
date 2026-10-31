@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/api" }
+  ],
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "docs/**"
+    },
+    "api/stream.js": {
+      "maxDuration": 30
+    },
+    "api/proxy.js": {
+      "maxDuration": 60
+    }
+  }
+}
