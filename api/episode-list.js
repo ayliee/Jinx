@@ -1,7 +1,7 @@
 "use strict";
 
-const { route, ok, badRequest } = require("../../src/core/respond");
-const { getEpisodes } = require("../../src/scrapers/episodes");
+const { route, ok, badRequest } = require("../src/core/respond");
+const { getEpisodes } = require("../src/scrapers/episodes");
 
 module.exports = route(async (req, res) => {
   const slug = String(req.query.slug || "").trim();

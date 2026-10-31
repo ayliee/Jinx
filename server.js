@@ -20,9 +20,9 @@ const routes = [
   ["GET", "/api/stream", "api/stream.js"],
   ["GET", "/api/downloads", "api/downloads.js"],
   ["GET", "/api/proxy", "api/proxy.js"],
-  ["GET", /^\/api\/anime\/([^/]+)$/, "api/anime/[slug].js", ["slug"]],
-  ["GET", /^\/api\/episodes\/([^/]+)$/, "api/episodes/[slug].js", ["slug"]],
-  ["GET", /^\/api\/browse\/([^/]+)\/([^/]+)$/, "api/browse/[category]/[value].js", ["category", "value"]],
+  ["GET", /^\/api\/anime\/([^/]+)$/, "api/anime-info.js", ["slug"]],
+  ["GET", /^\/api\/episodes\/([^/]+)$/, "api/episode-list.js", ["slug"]],
+  ["GET", /^\/api\/browse\/([^/]+)\/([^/]+)$/, "api/browse-list.js", ["category", "value"]],
 ];
 
 const server = http.createServer((req, res) => {

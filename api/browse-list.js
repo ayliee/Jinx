@@ -1,7 +1,7 @@
 "use strict";
 
-const { route, ok, badRequest } = require("../../../src/core/respond");
-const { browseList } = require("../../../src/scrapers/browse");
+const { route, ok, badRequest } = require("../src/core/respond");
+const { browseList } = require("../src/scrapers/browse");
 
 const CATEGORIES = ["genre", "studio", "producer", "status"];
 
