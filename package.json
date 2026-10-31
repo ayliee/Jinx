@@ -1,6 +1,7 @@
 {
   "name": "jinx",
   "version": "1.0.0",
+  "main": "local.js",
   "description": "Jinx: pure Node.js anime scraping API for anikototv.to, deployable on Vercel",
   "private": true,
   "scripts": {
