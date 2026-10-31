@@ -14,15 +14,15 @@ const routes = [
   ["GET", "/api/refresh", "api/refresh.js"],
   ["GET", "/api/search", "api/search.js"],
   ["GET", "/api/filter", "api/filter.js"],
-  ["GET", "/api/az-list", "api/az-list.js"],
+  ["GET", "/api/az-list", "api/az.list.js"],
   ["GET", "/api/schedule", "api/schedule.js"],
   ["GET", "/api/servers", "api/servers.js"],
   ["GET", "/api/stream", "api/stream.js"],
   ["GET", "/api/downloads", "api/downloads.js"],
   ["GET", "/api/proxy", "api/proxy.js"],
-  ["GET", /^\/api\/anime\/([^/]+)$/, "api/anime-info.js", ["slug"]],
-  ["GET", /^\/api\/episodes\/([^/]+)$/, "api/episode-list.js", ["slug"]],
-  ["GET", /^\/api\/browse\/([^/]+)\/([^/]+)$/, "api/browse-list.js", ["category", "value"]],
+  ["GET", /^\/api\/anime\/([^/]+)$/, "api/anime.info.js", ["slug"]],
+  ["GET", /^\/api\/episodes\/([^/]+)$/, "api/episode.list.js", ["slug"]],
+  ["GET", /^\/api\/browse\/([^/]+)\/([^/]+)$/, "api/browse.list.js", ["category", "value"]],
 ];
 
 const server = http.createServer((req, res) => {
