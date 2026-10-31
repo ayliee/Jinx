@@ -1,13 +1,14 @@
 "use strict";
 
 const { BASE, getText, getJson, fail } = require("../core/http");
+const { cached } = require("../core/cache");
 const { count } = require("../core/html");
 
 function animeIdFromPage(html) {
   return count(/const mangaId = (\d+)/, html) || count(/id="watch-main"[^>]*data-id="(\d+)"/, html);
 }
 
-async function getEpisodes(slug) {
+async function loadEpisodes(slug) {
   const pageUrl = `${BASE}/watch/${slug}`;
   const html = await getText(pageUrl);
   const animeId = animeIdFromPage(html);
@@ -27,6 +28,10 @@ async function getEpisodes(slug) {
     };
   });
   return { animeId, episodes };
+}
+
+function getEpisodes(slug) {
+  return cached(`episodes:${slug}`, 120000, () => loadEpisodes(slug));
 }
 
 module.exports = { getEpisodes, animeIdFromPage };

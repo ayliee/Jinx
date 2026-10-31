@@ -40,5 +40,5 @@ module.exports = route(async (req, res) => {
     params.push(["sort", query.sort]);
   }
   if (query.page) params.push(["page", query.page]);
-  ok(res, await browseList("filter", params));
+  ok(res, await browseList("filter", params), 120);
 });

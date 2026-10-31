@@ -203,6 +203,7 @@
     <a href="#conventions">Response format</a>
     <div class="nav-group">API Reference</div>
     <a href="#get-home">GET /api/home</a>
+    <a href="#get-latest">GET /api/latest</a>
     <a href="#get-random">GET /api/random</a>
     <a href="#get-search">GET /api/search</a>
     <a href="#get-filter">GET /api/filter</a>
@@ -215,9 +216,12 @@
     <a href="#get-stream">GET /api/stream</a>
     <a href="#get-downloads">GET /api/downloads</a>
     <a href="#get-proxy">GET /api/proxy</a>
+    <a href="#get-refresh">GET /api/refresh</a>
     <a href="#get-health">GET /api/health</a>
     <div class="nav-group">Guides</div>
     <a href="#integration">Integration guide</a>
+    <a href="#player-guide">Custom player</a>
+    <a href="#auto-update">Auto updates</a>
     <a href="#player">Player setup</a>
     <a href="#errors">Error handling</a>
     <a href="#faq">FAQ</a>
@@ -311,7 +315,7 @@ npm start
 }</code></pre>
 
 <h2 id="api-reference">API Reference</h2>
-<p class="lead">Fourteen endpoints cover everything the source exposes. All of them accept only GET requests.</p>
+<p class="lead">Sixteen endpoints cover everything the source exposes. All of them accept only GET requests.</p>
 
 <div class="endpoint" id="get-home">
   <h3><span class="method">GET</span><code>/api/home</code></h3>
@@ -332,6 +336,28 @@ npm start
       "week":  [ ... ],
       "month": [ ... ]
     }
+  }
+}</code></pre>
+</div>
+
+<div class="endpoint" id="get-latest">
+  <h3><span class="method">GET</span><code>/api/latest</code></h3>
+  <p>The freshest episode feed: every new episode as soon as the source publishes it, newest first. Poll this to power watchlists and notifications.</p>
+  <table>
+    <tr><th>Parameter</th><th>Description</th></tr>
+    <tr><td>page</td><td>Page number, default <code>1</code>.</td></tr>
+  </table>
+  <pre><code>curl "https://YOUR-API/api/latest"</code></pre>
+  <pre><code>{
+  "ok": true,
+  "data": {
+    "page": 1,
+    "episodes": [
+      { "id": "9082", "slug": "the-seven-knights-of-the-marronnier-kingdom-f9130",
+        "episode": "5", "title": "The Seven Knights of the Marronnier Kingdom",
+        "poster": "https://cdn.anipixcdn.co/thumbnail/c7d84ae0568e....jpg",
+        "episodes": { "sub": "5", "dub": "5", "total": "20" }, "type": "TV" }
+    ]
   }
 }</code></pre>
 </div>
@@ -593,6 +619,24 @@ npm start
   <pre><code>curl "https://YOUR-API/api/proxy?u=https%3A%2F%2Fmegap.shiora.top%2F...%2Fmaster.m3u8&amp;s=AsV7ZyyTe9vOA3Iqt8Plng..."</code></pre>
 </div>
 
+<div class="endpoint" id="get-refresh">
+  <h3><span class="method">GET</span><code>/api/refresh</code></h3>
+  <p>Warms the hot feeds (home, latest, schedule) so new episodes surface within moments of airing. Called automatically by the auto update layer, but you can trigger it yourself after major schedule changes.</p>
+  <pre><code>curl "https://YOUR-API/api/refresh"</code></pre>
+  <pre><code>{
+  "ok": true,
+  "data": {
+    "warmed": [
+      { "feed": "home", "ok": true },
+      { "feed": "latest", "ok": true },
+      { "feed": "schedule", "ok": true }
+    ],
+    "time": "2026-01-01T12:00:00.000Z"
+  }
+}</code></pre>
+  <div class="callout"><p><b>Hands off.</b> On Vercel a cron calls this every five minutes; when self hosting, the bundled server warms the feeds every sixty seconds. See <a href="#auto-update">Auto updates</a>.</p></div>
+</div>
+
 <div class="endpoint" id="get-health">
   <h3><span class="method">GET</span><code>/api/health</code></h3>
   <p>Uptime and version check.</p>
@@ -647,6 +691,55 @@ const skip = stream.data.skip;             // skip intro and outro</code></pre>
     <p>Use <code>/api/servers</code> so the user can switch between HD, Vidstream and others, then pass the chosen <code>linkId</code> to <code>/api/stream?link=</code>. Use <code>/api/downloads</code> for an offline download menu.</p>
     <pre><code>const servers = await fetch(`${API}/api/servers?ids=${ep.ids}`).then(r =&gt; r.json());
 const stream = await fetch(`${API}/api/stream?link=${servers.data.groups[0].servers[1].linkId}`).then(r =&gt; r.json());</code></pre>
+  </div>
+</div>
+
+<h2 id="player-guide">Custom player</h2>
+<p class="lead">Jinx ships with a full watch page built on this API, styled after the source site. It lives at <code>/player</code> and needs zero setup.</p>
+<pre><code>https://YOUR-DEPLOYMENT/player                      // start with search
+https://YOUR-DEPLOYMENT/player?slug=one-piece-1999  // open a series
+https://YOUR-DEPLOYMENT/player?slug=one-piece-1999&amp;ep=12&amp;type=dub</code></pre>
+<div class="steps">
+  <div class="step">
+    <h4>What it does</h4>
+    <p>Custom control bar with seek, volume, quality picker, playback speed and subtitle menu. Skip intro and outro buttons appear exactly when the markers say so. Episode grid with SUB/DUB filtering, server chips for switching mirrors, resume position and watched marks that persist in the browser, plus auto play, auto skip and auto next toggles.</p>
+  </div>
+  <div class="step">
+    <h4>Keyboard shortcuts</h4>
+    <p><code>Space</code> or <code>K</code> play and pause, <code>J</code>/<code>L</code> jump ten seconds, arrows seek five seconds, <code>M</code> mute, <code>F</code> fullscreen, double click the video for fullscreen.</p>
+  </div>
+  <div class="step">
+    <h4>Point it at any Jinx host</h4>
+    <p>The player calls the API it is served from. To run the page somewhere else and still use your deployment, add <code>?api=</code> once and it is remembered.</p>
+    <pre><code>/player?api=https://jinx.vercel.app&amp;slug=one-piece-1999</code></pre>
+  </div>
+</div>
+<div class="callout"><p><b>Build your own?</b> The player is a single HTML file, <code>docs/player.html</code>. Fork it, restyle it, or use it as the reference for the integration steps above.</p></div>
+
+<h2 id="auto-update">Auto updates</h2>
+<p class="lead">Jinx fetches new content the moment the source publishes it. A small freshness layer keeps every feed current without hammering the site.</p>
+<div class="steps">
+  <div class="step">
+    <h4>How it works</h4>
+    <p>Every endpoint sits on a short lived cache with stale while revalidate semantics. When a cached answer expires, the next request gets the fresh copy while the old one is served in the background. The hot feeds (home, latest, schedule) are also warmed proactively on a timer.</p>
+  </div>
+  <div class="step">
+    <h4>Timers</h4>
+    <table>
+      <tr><th>Feed</th><th>Cache</th></tr>
+      <tr><td><code>/api/search</code></td><td>30 seconds</td></tr>
+      <tr><td><code>/api/home</code>, <code>/api/latest</code></td><td>60 seconds</td></tr>
+      <tr><td><code>/api/schedule</code>, <code>/api/episodes</code>, <code>/api/filter</code>, <code>/api/az-list</code>, <code>/api/browse</code></td><td>2 minutes</td></tr>
+      <tr><td><code>/api/servers</code></td><td>5 minutes</td></tr>
+      <tr><td><code>/api/anime</code>, <code>/api/downloads</code></td><td>10 minutes</td></tr>
+      <tr><td><code>/api/stream</code>, <code>/api/random</code></td><td>never cached</td></tr>
+    </table>
+  </div>
+  <div class="step">
+    <h4>Warming</h4>
+    <p>Self hosting with <code>node server.js</code> refreshes the hot feeds every sixty seconds. On Vercel, the <code>vercel.json</code> cron calls <a href="#get-refresh"><code>/api/refresh</code></a> every five minutes. A brand new episode is therefore visible within a minute of going live.</p>
+    <pre><code>// force a warm right now
+fetch("https://YOUR-API/api/refresh")</code></pre>
   </div>
 </div>
 
@@ -709,7 +802,7 @@ const stream = await fetch(`${API}/api/stream?link=${servers.data.groups[0].serv
 <h4>Can I use this on mobile apps?</h4>
 <p>Yes. The proxy URLs are plain HLS playlists that ExoPlayer, AVPlayer and hls.js all understand.</p>
 <h4>How much can I cache?</h4>
-<p>All GET responses already send <code>Cache-Control</code>. Metadata rarely changes, so cache aggressively on your side too.</p>
+<p>All GET responses already send <code>Cache-Control</code> with short freshness windows tuned per endpoint (see <a href="#auto-update">Auto updates</a>). Cache aggressively on your side too.</p>
 <h4>The stream returned no sources.</h4>
 <p>That episode is very new or the server rotated. Try another server via <code>/api/servers</code> or retry in a minute.</p>
 <h4>Is there a rate limit?</h4>

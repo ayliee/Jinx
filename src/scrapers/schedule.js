@@ -1,6 +1,7 @@
 "use strict";
 
 const { BASE, getJson, fail } = require("../core/http");
+const { cached } = require("../core/cache");
 const { text, count } = require("../core/html");
 
 function parseSchedule(html) {
@@ -34,7 +35,11 @@ function parseSchedule(html) {
   return { week, items };
 }
 
-async function getSchedule(tz, date) {
+function getSchedule(tz, date) {
+  return cached(`schedule:${tz}:${date || ""}`, 120000, () => loadSchedule(tz, date));
+}
+
+async function loadSchedule(tz, date) {
   const time = date ? new Date(date).getTime() / 1000 : null;
   if (date && Number.isNaN(time)) fail(`Invalid date "${date}"`, 400);
   const base = await getJson(`${BASE}/ajax/schedule/page?tz=${tz}`, { xhr: true });

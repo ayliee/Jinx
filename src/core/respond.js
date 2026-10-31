@@ -14,15 +14,18 @@ function apiOrigin(req) {
 function send(res, status, body, headers = {}) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
-    "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
     ...CORS,
     ...headers,
   });
   res.end(JSON.stringify(body));
 }
 
-function ok(res, data) {
-  send(res, 200, { ok: true, data });
+function ok(res, data, cacheSeconds = 60) {
+  const cache =
+    cacheSeconds > 0
+      ? `public, s-maxage=${cacheSeconds}, stale-while-revalidate=${cacheSeconds * 2}`
+      : "no-store";
+  send(res, 200, { ok: true, data }, { "Cache-Control": cache });
 }
 
 function fail(res, status, message) {

@@ -1,10 +1,17 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/api" }
+    { "source": "/", "destination": "/api" },
+    { "source": "/player", "destination": "/api/player" }
+  ],
+  "crons": [
+    { "path": "/api/refresh", "schedule": "*/5 * * * *" }
   ],
   "functions": {
     "api/index.js": {
-      "includeFiles": "docs/**"
+      "includeFiles": "docs/index.html"
+    },
+    "api/player.js": {
+      "includeFiles": "docs/player.html"
     },
     "api/stream.js": {
       "maxDuration": 30

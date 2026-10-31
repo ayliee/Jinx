@@ -10,5 +10,5 @@ module.exports = route(async (req, res) => {
   const value = String(req.query.value || "").trim();
   if (!CATEGORIES.includes(category)) return badRequest(res, `category must be one of: ${CATEGORIES.join(", ")}`);
   if (!value) return badRequest(res, "Missing value");
-  ok(res, await browseList(`${category}/${encodeURIComponent(value)}`, [["page", req.query.page]]));
+  ok(res, await browseList(`${category}/${encodeURIComponent(value)}`, [["page", req.query.page]]), 120);
 });

@@ -8,5 +8,5 @@ module.exports = route(async (req, res) => {
   if (!mal || !episode || !timestamp) {
     return badRequest(res, "Missing mal, episode, or timestamp (all come from the episodes endpoint)");
   }
-  ok(res, await getDownloads(mal, episode, timestamp));
+  ok(res, await getDownloads(mal, episode, timestamp), 600);
 });

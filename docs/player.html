@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jinx Player</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b1120;
+    --panel: #111b29;
+    --panel-2: #0e1725;
+    --line: rgba(255, 255, 255, 0.08);
+    --text: #d7e3f4;
+    --muted: #8fa3bb;
+    --accent: #26a3d6;
+    --accent-2: #4cc2ff;
+    --danger: #e05260;
+    --radius: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background:
+      radial-gradient(1000px 500px at 85% -10%, rgba(38, 163, 214, 0.12), transparent 60%),
+      radial-gradient(800px 420px at -10% 110%, rgba(38, 163, 214, 0.08), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font: 14.5px/1.6 "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+  }
+  a { color: var(--accent-2); text-decoration: none; }
+  button, select, input { font-family: inherit; }
+
+  .top {
+    display: flex; align-items: center; gap: 18px;
+    padding: 14px 26px;
+    background: rgba(13, 22, 36, 0.85);
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(10px);
+  }
+  .logo {
+    font-family: "Bebas Neue", "Nunito", sans-serif;
+    font-size: 30px; letter-spacing: 2px; color: #fff;
+    line-height: 1;
+  }
+  .logo span { color: var(--accent); margin-left: 8px; font-size: 17px; letter-spacing: 4px; }
+  .search { position: relative; flex: 1; max-width: 560px; }
+  .search input {
+    width: 100%; padding: 11px 16px;
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 999px; color: var(--text); font-size: 14px; outline: none;
+  }
+  .search input:focus { border-color: var(--accent); }
+  .results {
+    position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); overflow: hidden; display: none;
+    max-height: 420px; overflow-y: auto;
+  }
+  .results.open { display: block; }
+  .results .item {
+    display: flex; gap: 12px; align-items: center;
+    padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--line);
+  }
+  .results .item:hover { background: rgba(38, 163, 214, 0.12); }
+  .results img { width: 38px; height: 52px; object-fit: cover; border-radius: 6px; background: var(--panel-2); }
+  .results .r-title { font-weight: 700; font-size: 13.5px; }
+  .results .r-meta { color: var(--muted); font-size: 11.5px; }
+  .docs-link {
+    margin-left: auto; color: var(--muted); font-weight: 700; font-size: 12.5px;
+    border: 1px solid var(--line); padding: 8px 14px; border-radius: 999px;
+  }
+  .docs-link:hover { color: var(--accent-2); border-color: var(--accent); }
+
+  .wrap {
+    display: grid; grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 22px; padding: 22px 26px 60px; max-width: 1500px; margin: 0 auto;
+  }
+
+  .player-box {
+    position: relative; background: #000;
+    border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--line);
+    aspect-ratio: 16 / 9;
+  }
+  .player-box video { width: 100%; height: 100%; display: block; background: #000; }
+  .player-box video::cue { background: rgba(0, 0, 0, 0.72); color: #fff; font-size: 0.9em; }
+
+  .loader {
+    position: absolute; inset: 0; display: none;
+    align-items: center; justify-content: center; flex-direction: column; gap: 14px;
+    background: rgba(5, 10, 18, 0.72); z-index: 6;
+    font-size: 13px; color: var(--muted);
+  }
+  .loader.on { display: flex; }
+  .spin {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.15); border-top-color: var(--accent);
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .skip-btn {
+    position: absolute; right: 22px; bottom: 86px; z-index: 8;
+    display: none; padding: 10px 22px;
+    background: rgba(255, 255, 255, 0.92); color: #10222f;
+    font-weight: 800; font-size: 13.5px; letter-spacing: 0.4px;
+    border: none; border-radius: 8px; cursor: pointer;
+  }
+  .skip-btn:hover { background: #fff; }
+  .skip-btn.on { display: block; }
+
+  .ctrl {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 7;
+    padding: 26px 16px 12px;
+    background: linear-gradient(transparent, rgba(4, 8, 14, 0.92));
+    opacity: 1; transition: opacity 0.25s ease;
+  }
+  .player-box.hide-ctrl .ctrl { opacity: 0; pointer-events: none; }
+  .seek {
+    position: relative; height: 5px; margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.18); border-radius: 4px;
+    cursor: pointer;
+  }
+  .seek .buffered { position: absolute; inset: 0 auto 0 0; background: rgba(255, 255, 255, 0.28); border-radius: 4px; width: 0; }
+  .seek .played { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 4px; width: 0; }
+  .seek .knob {
+    position: absolute; top: 50%; left: 0; transform: translate(-50%, -50%);
+    width: 13px; height: 13px; border-radius: 50%; background: var(--accent-2);
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .seek:hover .knob { opacity: 1; }
+  .seek:hover { height: 7px; }
+  .row { display: flex; align-items: center; gap: 13px; }
+  .row button {
+    background: none; border: none; color: #eaf2fb; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; padding: 4px;
+  }
+  .row button:hover { color: var(--accent-2); }
+  .row svg { width: 21px; height: 21px; fill: currentColor; }
+  .time { font-size: 12px; color: #cfe0ee; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .vol { display: flex; align-items: center; gap: 7px; }
+  .vol input { width: 76px; accent-color: var(--accent); cursor: pointer; }
+  .grow { flex: 1; }
+  .tag-btn {
+    font-size: 11.5px; font-weight: 800; letter-spacing: 0.6px;
+    border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 6px;
+    padding: 3px 8px; color: #eaf2fb; background: none; cursor: pointer;
+  }
+  .tag-btn.active { border-color: var(--accent); color: var(--accent-2); }
+
+  .menu {
+    position: absolute; right: 14px; bottom: 62px; z-index: 9;
+    width: 250px; background: rgba(13, 22, 36, 0.97);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 12px; display: none;
+  }
+  .menu.open { display: block; }
+  .menu h5 {
+    font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase;
+    color: var(--muted); margin: 8px 2px 6px;
+  }
+  .menu .opt {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 9px; border-radius: 7px; cursor: pointer;
+    font-size: 13px; color: var(--text);
+  }
+  .menu .opt:hover { background: rgba(38, 163, 214, 0.14); }
+  .menu .opt.sel { color: var(--accent-2); font-weight: 700; }
+  .menu .switch {
+    width: 34px; height: 19px; border-radius: 999px; background: rgba(255, 255, 255, 0.2);
+    position: relative; flex: none;
+  }
+  .menu .switch::after {
+    content: ""; position: absolute; top: 2.5px; left: 3px;
+    width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: left 0.18s;
+  }
+  .menu .opt.on .switch { background: var(--accent); }
+  .menu .opt.on .switch::after { left: 17px; }
+
+  .now { margin-top: 18px; }
+  .tip {
+    display: inline-block; background: rgba(38, 163, 214, 0.14);
+    border: 1px solid rgba(38, 163, 214, 0.35);
+    color: var(--accent-2); border-radius: 8px;
+    padding: 7px 14px; font-size: 12.5px; font-weight: 600;
+  }
+  .now h1 {
+    font-family: "Bebas Neue", "Nunito", sans-serif;
+    font-size: 30px; letter-spacing: 1px; margin: 12px 0 4px;
+  }
+  .jp { color: var(--muted); font-style: italic; margin-bottom: 10px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .chip {
+    background: var(--panel); border: 1px solid var(--line);
+    color: var(--muted); border-radius: 999px;
+    padding: 4px 12px; font-size: 12px; font-weight: 700;
+  }
+  .chip.score { color: #ffd166; border-color: rgba(255, 209, 102, 0.35); }
+  .syn { color: var(--muted); max-width: 860px; font-size: 13.5px; }
+  .syn.clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .syn b { color: var(--accent-2); cursor: pointer; font-size: 12.5px; }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); margin-bottom: 18px; overflow: hidden;
+  }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 16px; border-bottom: 1px solid var(--line);
+    font-family: "Bebas Neue", "Nunito", sans-serif;
+    letter-spacing: 1.6px; font-size: 18px;
+  }
+  .panel-head select {
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 7px;
+    padding: 5px 9px; font-size: 12px; outline: none; cursor: pointer;
+  }
+  .type-tabs { display: flex; gap: 8px; padding: 12px 14px 2px; }
+  .type-tabs .tab {
+    padding: 6px 16px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line); color: var(--muted);
+    font-size: 11.5px; font-weight: 800; letter-spacing: 0.8px;
+  }
+  .type-tabs .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 14px 15px; }
+  .chips .srv {
+    padding: 7px 13px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--panel-2);
+    color: var(--text); font-size: 12.5px; font-weight: 700;
+  }
+  .chips .srv:hover { border-color: var(--accent); }
+  .chips .srv.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chips .srv small { display: block; font-size: 9.5px; letter-spacing: 1px; color: inherit; opacity: 0.75; }
+
+  .ep-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 7px; padding: 13px; max-height: 460px; overflow-y: auto;
+  }
+  .ep {
+    position: relative; padding: 9px 4px; text-align: center;
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 8px; cursor: pointer; color: var(--muted);
+    font-size: 12.5px; font-weight: 800;
+  }
+  .ep:hover { border-color: var(--accent); color: var(--text); }
+  .ep.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .ep.watched::after {
+    content: ""; position: absolute; top: 5px; right: 6px;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--accent-2);
+  }
+  .ep.active.watched::after { background: #fff; }
+  .ep .flags { display: block; font-size: 8.5px; letter-spacing: 1px; margin-top: 2px; opacity: 0.8; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 20px);
+    background: var(--panel); border: 1px solid var(--line);
+    padding: 11px 20px; border-radius: 9px; font-size: 13px;
+    opacity: 0; pointer-events: none; transition: all 0.25s ease; z-index: 90;
+  }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+  .toast.err { border-color: var(--danger); }
+
+  @media (max-width: 1020px) {
+    .wrap { grid-template-columns: 1fr; }
+    .search { max-width: none; }
+    .docs-link { display: none; }
+    .ep-grid { max-height: 320px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="logo" href="/">JINX<span>PLAYER</span></a>
+  <div class="search">
+    <input id="q" type="text" placeholder="Search anime titles..." autocomplete="off">
+    <div class="results" id="results"></div>
+  </div>
+  <a class="docs-link" href="/">API Docs</a>
+</header>
+
+<main class="wrap">
+  <section class="main-col">
+    <div class="player-box" id="box">
+      <video id="video" playsinline></video>
+      <div class="loader" id="loader"><div class="spin"></div><div id="loaderText">Loading stream...</div></div>
+      <button class="skip-btn" id="skipBtn">SKIP</button>
+      <div class="ctrl" id="ctrl">
+        <div class="seek" id="seek">
+          <div class="buffered" id="buffered"></div>
+          <div class="played" id="played"></div>
+          <div class="knob" id="knob"></div>
+        </div>
+        <div class="row">
+          <button id="playBtn" title="Play">
+            <svg viewBox="0 0 24 24" id="playIcon"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <button id="nextBtn" title="Next episode">
+            <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+          </button>
+          <div class="time"><span id="cur">0:00</span> / <span id="dur">0:00</span></div>
+          <div class="vol">
+            <button id="muteBtn" title="Mute">
+              <svg viewBox="0 0 24 24" id="volIcon"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+            </button>
+            <input id="vol" type="range" min="0" max="1" step="0.05" value="1">
+          </div>
+          <div class="grow"></div>
+          <button class="tag-btn" id="ccBtn">CC</button>
+          <button id="gearBtn" title="Settings">
+            <svg viewBox="0 0 24 24"><path d="M19.14 12.94a7.07 7.07 0 000-1.88l2.03-1.58a.5.5 0 00.12-.64l-1.92-3.32a.5.5 0 00-.6-.22l-2.39.96a7.2 7.2 0 00-1.63-.94l-.36-2.54a.5.5 0 00-.5-.42h-3.84a.5.5 0 00-.5.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 00-.6.22L2.71 8.84a.5.5 0 00.12.64l2.03 1.58a7.07 7.07 0 000 1.88l-2.03 1.58a.5.5 0 00-.12.64l1.92 3.32c.13.22.39.31.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.09.47 0 .6-.22l1.92-3.32a.5.5 0 00-.12-.64l-2.03-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg>
+          </button>
+          <button id="fsBtn" title="Fullscreen">
+            <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="menu" id="menu">
+        <h5>Playback</h5>
+        <div class="opt" id="optAutoPlay">Auto play<span class="switch"></span></div>
+        <div class="opt" id="optAutoSkip">Auto skip intro<span class="switch"></span></div>
+        <div class="opt" id="optAutoNext">Auto next episode<span class="switch"></span></div>
+        <h5>Quality</h5>
+        <div id="qualList"></div>
+        <h5>Speed</h5>
+        <div id="speedList"></div>
+        <h5>Subtitles</h5>
+        <div id="subList"></div>
+      </div>
+    </div>
+
+    <div class="now">
+      <div class="tip">You are watching <b id="nowEp">Episode 1</b>.</div>
+      <h1 id="nowTitle">Pick an anime to start</h1>
+      <div class="jp" id="nowJp"></div>
+      <div class="meta" id="nowMeta"></div>
+      <div class="syn clamp" id="synopsis">Search for a series above or open the player with
+        <code>?slug=your-anime-slug&amp;ep=1</code>. <b id="synMore"></b></div>
+    </div>
+  </section>
+
+  <aside class="side-col">
+    <div class="panel">
+      <div class="panel-head">Servers</div>
+      <div class="type-tabs" id="typeTabs"></div>
+      <div class="chips" id="serverChips"><span style="color:var(--muted);font-size:12.5px">No servers yet.</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span>Episodes</span>
+        <select id="epFilter">
+          <option value="">All</option>
+          <option value="sub">Sub only</option>
+          <option value="dub">Dub only</option>
+        </select>
+      </div>
+      <div class="ep-grid" id="epGrid"></div>
+    </div>
+  </aside>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const qs = new URLSearchParams(location.search);
+  const API = qs.get("api") || localStorage.getItem("jinx.api") || location.origin;
+  const video = document.getElementById("video");
+  const box = document.getElementById("box");
+
+  const state = {
+    slug: qs.get("slug") || "",
+    anime: null,
+    episodes: [],
+    ep: null,
+    groups: [],
+    type: qs.get("type") || "",
+    server: qs.get("server") || "",
+    stream: null,
+    hls: null,
+  };
+
+  const settings = Object.assign(
+    { autoPlay: true, autoSkip: false, autoNext: true },
+    JSON.parse(localStorage.getItem("jinx.settings") || "{}")
+  );
+  const saveSettings = () => localStorage.setItem("jinx.settings", JSON.stringify(settings));
+
+  function toast(msg, err) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.className = "toast on" + (err ? " err" : "");
+    clearTimeout(el._t);
+    el._t = setTimeout(() => (el.className = "toast"), 3400);
+  }
+
+  const showLoader = (text) => {
+    const el = document.getElementById("loader");
+    document.getElementById("loaderText").textContent = text || "Loading stream...";
+    el.classList.add("on");
+  };
+  const hideLoader = () => document.getElementById("loader").classList.remove("on");
+
+  async function call(path) {
+    const res = await fetch(API + path);
+    const body = await res.json();
+    if (!body.ok) throw new Error(body.error || "Request failed");
+    return body.data;
+  }
+
+  const fmt = (s) => {
+    if (!isFinite(s)) return "0:00";
+    s = Math.max(0, Math.floor(s));
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(sec).padStart(2, "0");
+  };
+
+  const watchedKey = () => "jinx.watched." + state.slug;
+  const watchedSet = () => new Set(JSON.parse(localStorage.getItem(watchedKey()) || "[]"));
+  const markWatched = (num) => {
+    const set = watchedSet();
+    set.add(String(num));
+    localStorage.setItem(watchedKey(), JSON.stringify([...set]));
+  };
+
+  const resumeKey = () => "jinx.pos." + state.slug + "." + state.ep.number;
+
+  async function loadAnime(slug, epNum) {
+    showLoader("Loading anime...");
+    state.slug = slug;
+    try {
+      const [anime, pack] = await Promise.all([call("/api/anime/" + slug), call("/api/episodes/" + slug)]);
+      state.anime = anime;
+      state.episodes = pack.episodes;
+      renderInfo();
+      renderEpisodes();
+      hideLoader();
+      const want = epNum || qs.get("ep") || "1";
+      const found = state.episodes.find((e) => e.number === String(want) || e.slug === String(want));
+      await loadEpisode(found ? found.number : state.episodes[0]?.number);
+    } catch (err) {
+      hideLoader();
+      toast(err.message, true);
+    }
+  }
+
+  function renderInfo() {
+    const a = state.anime;
+    document.getElementById("nowTitle").textContent = a.title;
+    document.getElementById("nowJp").textContent = a.titleJp && a.titleJp !== a.title ? a.titleJp : "";
+    const meta = [];
+    if (a.score) meta.push('<span class="chip score">MAL ' + a.score + "</span>");
+    if (a.type) meta.push('<span class="chip">' + a.type + "</span>");
+    if (a.status) meta.push('<span class="chip">' + a.status + "</span>");
+    if (a.premiered) meta.push('<span class="chip">' + a.premiered + "</span>");
+    (a.genres || []).forEach((g) => meta.push('<span class="chip">' + g.name + "</span>"));
+    document.getElementById("nowMeta").innerHTML = meta.join("");
+    const syn = document.getElementById("synopsis");
+    syn.classList.add("clamp");
+    syn.innerHTML = (a.synopsis || "No synopsis available.") + ' <b id="synMore">[more]</b>';
+    document.getElementById("synMore").onclick = () => syn.classList.toggle("clamp");
+  }
+
+  function renderEpisodes() {
+    const grid = document.getElementById("epGrid");
+    const filter = document.getElementById("epFilter").value;
+    const watched = watchedSet();
+    const list = state.episodes.filter((e) => !filter || e[filter]);
+    grid.innerHTML = list
+      .map((e) => {
+        const flags = (e.sub ? "SUB " : "") + (e.dub ? "DUB" : "");
+        return (
+          '<div class="ep' +
+          (state.ep && e.number === state.ep.number ? " active" : "") +
+          (watched.has(String(e.number)) ? " watched" : "") +
+          '" data-ep="' + e.number + '">' +
+          e.number +
+          '<span class="flags">' + flags.trim() + "</span></div>"
+        );
+      })
+      .join("");
+    grid.querySelectorAll(".ep").forEach((el) => {
+      el.onclick = () => loadEpisode(el.dataset.ep);
+    });
+  }
+
+  function renderTypeTabs() {
+    const hasSub = state.episodes.some((e) => e.sub);
+    const hasDub = state.episodes.some((e) => e.dub);
+    const tabs = [];
+    if (hasSub) tabs.push("sub");
+    if (hasDub) tabs.push("dub");
+    const el = document.getElementById("typeTabs");
+    el.innerHTML = tabs
+      .map((t) => '<div class="tab' + ((state.type || tabs[0]) === t ? " active" : "") + '" data-t="' + t + '">' + t.toUpperCase() + "</div>")
+      .join("");
+    el.querySelectorAll(".tab").forEach((tab) => {
+      tab.onclick = () => {
+        state.type = tab.dataset.t;
+        renderTypeTabs();
+        if (state.ep) loadEpisode(state.ep.number, true);
+      };
+    });
+    if (!state.type && tabs.length) state.type = tabs[0];
+  }
+
+  function renderServers(groups) {
+    state.groups = groups;
+    const activeType = state.type || (groups[0] && groups[0].type);
+    const group = groups.find((g) => g.type === activeType) || groups[0];
+    const el = document.getElementById("serverChips");
+    if (!group) {
+      el.innerHTML = '<span style="color:var(--muted);font-size:12.5px">No servers for this episode.</span>';
+      return;
+    }
+    el.innerHTML = group.servers
+      .map(
+        (s) =>
+          '<div class="srv' + (state.server === s.svId ? " active" : "") + '" data-sv="' + s.svId + '">' +
+          s.name + "<small>" + group.type.toUpperCase() + "</small></div>"
+      )
+      .join("");
+    el.querySelectorAll(".srv").forEach((chip) => {
+      chip.onclick = () => {
+        state.server = chip.dataset.sv;
+        loadEpisode(state.ep.number, true);
+      };
+    });
+  }
+
+  async function loadEpisode(num, keepServer) {
+    const ep = state.episodes.find((e) => String(e.number) === String(num) || String(e.slug) === String(num));
+    if (!ep) return;
+    state.ep = ep;
+    if (!keepServer) state.server = "";
+    document.getElementById("nowEp").textContent = "Episode " + ep.number;
+    renderEpisodes();
+    renderTypeTabs();
+    showLoader("Resolving stream...");
+    try {
+      const query =
+        "/api/stream?slug=" + encodeURIComponent(state.slug) +
+        "&episode=" + encodeURIComponent(ep.number) +
+        (state.type ? "&type=" + state.type : "") +
+        (state.server ? "&server=" + encodeURIComponent(state.server) : "");
+      const stream = await call(query);
+      state.stream = stream;
+      state.server = stream.server.svId;
+      renderServers(state.groups.length ? state.groups : []);
+      attachStream(stream);
+      call("/api/servers?ids=" + encodeURIComponent(ep.ids)).then((r) => renderServers(r.groups)).catch(() => {});
+    } catch (err) {
+      hideLoader();
+      toast(err.message, true);
+    }
+  }
+
+  function attachStream(stream) {
+    const url = stream.master.proxy;
+    if (state.hls) {
+      state.hls.destroy();
+      state.hls = null;
+    }
+    document.querySelectorAll("#video track").forEach((t) => t.remove());
+    (stream.subtitles || []).forEach((sub, i) => {
+      const track = document.createElement("track");
+      track.kind = "subtitles";
+      track.label = sub.label;
+      track.srclang = (sub.label || "").toLowerCase();
+      track.src = sub.proxy;
+      if (sub.default) track.default = true;
+      video.appendChild(track);
+    });
+    renderSubList(stream.subtitles || []);
+
+    const done = () => {
+      hideLoader();
+      const saved = Number(localStorage.getItem(resumeKey()) || 0);
+      if (saved > 5 && saved < video.duration - 10) {
+        video.currentTime = saved;
+        toast("Resuming from " + fmt(saved));
+      }
+      if (settings.autoPlay) video.play().catch(() => {});
+    };
+
+    if (window.Hls && Hls.isSupported()) {
+      const hls = new Hls();
+      state.hls = hls;
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        renderQualityList(hls.levels);
+        done();
+      });
+      hls.on(Hls.Events.ERROR, (_, data) => {
+        if (data.fatal) {
+          hideLoader();
+          toast("Stream failed on this server, try another one.", true);
+        }
+      });
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = url;
+      video.addEventListener("loadedmetadata", done, { once: true });
+    } else {
+      hideLoader();
+      toast("Hls.js is not available in this browser.", true);
+    }
+    showLoader("Loading stream...");
+    markWatched(epSafeNumber());
+  }
+
+  const epSafeNumber = () => (state.ep ? state.ep.number : "1");
+
+  function renderQualityList(levels) {
+    const el = document.getElementById("qualList");
+    const current = state.hls ? state.hls.currentLevel : -1;
+    el.innerHTML =
+      '<div class="opt' + (current === -1 ? " sel" : "") + '" data-q="-1">Auto</div>' +
+      (levels || [])
+        .map((l, i) => '<div class="opt' + (current === i ? " sel" : "") + '" data-q="' + i + '">' +
+          (l.height ? l.height + "p" : Math.round(l.bitrate / 1000) + " kbps") + "</div>")
+        .join("");
+    el.querySelectorAll(".opt").forEach((opt) => {
+      opt.onclick = () => {
+        if (state.hls) state.hls.currentLevel = Number(opt.dataset.q);
+        renderQualityList(levels);
+      };
+    });
+  }
+
+  function renderSubList(subs) {
+    const el = document.getElementById("subList");
+    const tracks = [...video.textTracks];
+    el.innerHTML =
+      '<div class="opt" data-s="-1">Off</div>' +
+      subs.map((s, i) => '<div class="opt' + (s.default ? " sel" : "") + '" data-s="' + i + '">' + s.label + "</div>").join("");
+    el.querySelectorAll(".opt").forEach((opt) => {
+      opt.onclick = () => {
+        const idx = Number(opt.dataset.s);
+        tracks.forEach((t, i) => (t.mode = i === idx ? "showing" : "disabled"));
+        el.querySelectorAll(".opt").forEach((o) => o.classList.remove("sel"));
+        opt.classList.add("sel");
+        document.getElementById("ccBtn").classList.toggle("active", idx >= 0);
+      };
+    });
+    tracks.forEach((t, i) => (t.mode = subs[i] && subs[i].default ? "showing" : "disabled"));
+    document.getElementById("ccBtn").classList.toggle("active", subs.some((s) => s.default));
+  }
+
+  // Player controls
+  const playIcon = document.getElementById("playIcon");
+  const setPlayIcon = () => {
+    playIcon.innerHTML = video.paused
+      ? '<path d="M8 5v14l11-7z"/>'
+      : '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+  };
+  document.getElementById("playBtn").onclick = () => (video.paused ? video.play() : video.pause());
+  video.addEventListener("play", setPlayIcon);
+  video.addEventListener("pause", setPlayIcon);
+  video.addEventListener("ended", () => {
+    markWatched(epSafeNumber());
+    renderEpisodes();
+    if (settings.autoNext) nextEpisode();
+  });
+  document.getElementById("nextBtn").onclick = nextEpisode;
+
+  function nextEpisode() {
+    const idx = state.episodes.findIndex((e) => e.number === state.ep.number);
+    if (idx >= 0 && idx + 1 < state.episodes.length) loadEpisode(state.episodes[idx + 1].number);
+    else toast("This is the last episode.");
+  }
+
+  const seek = document.getElementById("seek");
+  const playedBar = document.getElementById("played");
+  const knob = document.getElementById("knob");
+  const bufferBar = document.getElementById("buffered");
+
+  video.addEventListener("timeupdate", () => {
+    const pct = (video.currentTime / video.duration) * 100 || 0;
+    playedBar.style.width = pct + "%";
+    knob.style.left = pct + "%";
+    document.getElementById("cur").textContent = fmt(video.currentTime);
+    if (video.buffered.length) {
+      bufferBar.style.width = (video.buffered.end(video.buffered.length - 1) / video.duration) * 100 + "%";
+    }
+    if (video.currentTime > 5) localStorage.setItem(resumeKey(), String(Math.floor(video.currentTime)));
+    updateSkip();
+  });
+  video.addEventListener("loadedmetadata", () => {
+    document.getElementById("dur").textContent = fmt(video.duration);
+    renderQualityList(state.hls ? state.hls.levels : []);
+  });
+
+  const seekTo = (clientX) => {
+    const rect = seek.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    if (isFinite(video.duration)) video.currentTime = ratio * video.duration;
+  };
+  let seeking = false;
+  seek.addEventListener("mousedown", (e) => {
+    seeking = true;
+    seekTo(e.clientX);
+  });
+  window.addEventListener("mousemove", (e) => seeking && seekTo(e.clientX));
+  window.addEventListener("mouseup", () => (seeking = false));
+
+  const volInput = document.getElementById("vol");
+  volInput.addEventListener("input", () => {
+    video.volume = Number(volInput.value);
+    video.muted = video.volume === 0;
+  });
+  document.getElementById("muteBtn").onclick = () => {
+    video.muted = !video.muted;
+    volInput.value = video.muted ? 0 : video.volume;
+  };
+
+  document.getElementById("fsBtn").onclick = () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else box.requestFullscreen();
+  };
+
+  // Skip intro and outro
+  const skipBtn = document.getElementById("skipBtn");
+  function skipRange() {
+    const skip = state.stream && state.stream.skip;
+    if (!skip) return null;
+    const t = video.currentTime;
+    for (const key of ["intro", "outro"]) {
+      const range = skip[key];
+      if (range && range.end > range.start && t >= range.start && t < range.end - 1.5) return { key, range };
+    }
+    return null;
+  }
+  function updateSkip() {
+    const hit = skipRange();
+    if (!hit) {
+      skipBtn.classList.remove("on");
+      return;
+    }
+    const isOutro = hit.key === "outro";
+    const hasNext = state.episodes.findIndex((e) => e.number === state.ep.number) < state.episodes.length - 1;
+    skipBtn.textContent = isOutro && hasNext ? "NEXT EPISODE" : "SKIP " + hit.key.toUpperCase();
+    skipBtn.classList.add("on");
+    if (settings.autoSkip && hit.key === "intro") video.currentTime = hit.range.end;
+  }
+  skipBtn.onclick = () => {
+    const hit = skipRange();
+    if (!hit) return;
+    if (hit.key === "outro" && settings.autoNext) nextEpisode();
+    else video.currentTime = hit.range.end;
+  };
+
+  // Settings menu
+  const menu = document.getElementById("menu");
+  document.getElementById("gearBtn").onclick = (e) => {
+    e.stopPropagation();
+    menu.classList.toggle("open");
+  };
+  document.addEventListener("click", (e) => {
+    if (!menu.contains(e.target)) menu.classList.remove("open");
+    if (!document.querySelector(".search").contains(e.target)) {
+      document.getElementById("results").classList.remove("open");
+    }
+  });
+
+  const toggles = [
+    ["optAutoPlay", "autoPlay"],
+    ["optAutoSkip", "autoSkip"],
+    ["optAutoNext", "autoNext"],
+  ];
+  function renderToggles() {
+    toggles.forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      el.classList.toggle("on", settings[key]);
+      el.onclick = () => {
+        settings[key] = !settings[key];
+        saveSettings();
+        renderToggles();
+      };
+    });
+  }
+  renderToggles();
+
+  const speeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
+  document.getElementById("speedList").innerHTML = speeds
+    .map((s) => '<div class="opt' + (s === 1 ? " sel" : "") + '" data-sp="' + s + '">' + s + "x</div>")
+    .join("");
+  document.querySelectorAll("#speedList .opt").forEach((opt) => {
+    opt.onclick = () => {
+      video.playbackRate = Number(opt.dataset.sp);
+      document.querySelectorAll("#speedList .opt").forEach((o) => o.classList.remove("sel"));
+      opt.classList.add("sel");
+    };
+  });
+
+  document.getElementById("ccBtn").onclick = () => {
+    const tracks = [...video.textTracks];
+    const showing = tracks.findIndex((t) => t.mode === "showing");
+    const next = showing + 1 >= tracks.length ? -1 : showing + 1;
+    tracks.forEach((t, i) => (t.mode = i === next ? "showing" : "disabled"));
+    document.getElementById("ccBtn").classList.toggle("active", next >= 0);
+    toast(next >= 0 ? "Subtitles: " + tracks[next].label : "Subtitles off");
+  };
+
+  // Control auto hide
+  let hideTimer = null;
+  box.addEventListener("mousemove", () => {
+    box.classList.remove("hide-ctrl");
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => {
+      if (!video.paused) box.classList.add("hide-ctrl");
+    }, 3000);
+  });
+  box.addEventListener("dblclick", () => document.getElementById("fsBtn").click());
+
+  // Keyboard shortcuts
+  document.addEventListener("keydown", (e) => {
+    if (e.target.tagName === "INPUT") return;
+    switch (e.key.toLowerCase()) {
+      case " ":
+      case "k":
+        e.preventDefault();
+        video.paused ? video.play() : video.pause();
+        break;
+      case "arrowright":
+        video.currentTime += 5;
+        break;
+      case "arrowleft":
+        video.currentTime -= 5;
+        break;
+      case "l":
+        video.currentTime += 10;
+        break;
+      case "j":
+        video.currentTime -= 10;
+        break;
+      case "f":
+        document.getElementById("fsBtn").click();
+        break;
+      case "m":
+        document.getElementById("muteBtn").click();
+        break;
+    }
+  });
+
+  // Search
+  let searchTimer = null;
+  const results = document.getElementById("results");
+  document.getElementById("q").addEventListener("input", (e) => {
+    clearTimeout(searchTimer);
+    const q = e.target.value.trim();
+    if (!q) return results.classList.remove("open");
+    searchTimer = setTimeout(async () => {
+      try {
+        const r = await call("/api/search?q=" + encodeURIComponent(q));
+        results.innerHTML = r.results
+          .slice(0, 8)
+          .map(
+            (it) =>
+              '<div class="item" data-slug="' + it.slug + '">' +
+              (it.poster ? '<img src="' + it.poster + '" alt="">' : "") +
+              "<div><div class=\"r-title\">" + it.title + "</div>" +
+              '<div class="r-meta">' + [it.type, it.score ? "MAL " + it.score : "", it.rating || ""]
+                .filter(Boolean)
+                .join(" · ") + "</div></div></div>"
+          )
+          .join("");
+        results.classList.add("open");
+        results.querySelectorAll(".item").forEach((el) => {
+          el.onclick = () => {
+            results.classList.remove("open");
+            document.getElementById("q").value = "";
+            history.replaceState(null, "", "?slug=" + el.dataset.slug);
+            loadAnime(el.dataset.slug);
+          };
+        });
+      } catch {
+        results.classList.remove("open");
+      }
+    }, 280);
+  });
+
+  document.getElementById("epFilter").addEventListener("change", renderEpisodes);
+
+  if (state.slug) loadAnime(state.slug, qs.get("ep"));
+  else showLoader("Search for an anime to begin");
+})();
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 "use strict";
 
 const { BASE, getText, getJson, fail } = require("../core/http");
+const { cached } = require("../core/cache");
 const { text, count } = require("../core/html");
 const { parseCards } = require("./cards");
 
@@ -61,7 +62,7 @@ function parseRelated(html) {
   return items;
 }
 
-async function getAnime(slug) {
+async function loadAnime(slug) {
   const html = await getText(`${BASE}/watch/${slug}`);
   const details = parseDetails(html);
   if (!details.id) fail(`Could not resolve anime id for "${slug}"`, 404);
@@ -77,6 +78,10 @@ async function getAnime(slug) {
     ),
   ]);
   return { ...details, slug, seasons, related, reactions };
+}
+
+function getAnime(slug) {
+  return cached(`anime:${slug}`, 600000, () => loadAnime(slug));
 }
 
 module.exports = { getAnime };

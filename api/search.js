@@ -6,5 +6,5 @@ const { searchAnime } = require("../src/scrapers/search");
 module.exports = route(async (req, res) => {
   const q = (req.query.q || req.query.keyword || "").trim();
   if (!q) return badRequest(res, "Missing query parameter q");
-  ok(res, { query: q, results: await searchAnime(q) });
+  ok(res, { query: q, results: await searchAnime(q) }, 30);
 });

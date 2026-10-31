@@ -1,72 +1,56 @@
-# Jinx API
+# Jinx
 
-A pure Node.js anime scraping API for anikototv.to built for streaming integrations. No npm dependencies, no build step, deployable on Vercel with one click.
+Scraping API for [anikototv.to](https://anikototv.to). Anime metadata, episode lists, schedules, search, multi server stream resolution with signed CDN proxying and a hosted docs page at the root. Pure JS, no dependencies.
 
-## Features
+## Deploy
 
-* Home page rails: spotlight, latest episodes, trending, new releases, top charts
-* Search and advanced filtering with pagination
-* Full anime metadata: titles, synopsis, genres, studios, scores, seasons, related series
-* Episode lists with sub/dub flags
-* Streaming server resolution down to HLS master playlists with quality variants
-* Multi language subtitles and skip intro/outro timestamps
-* Weekly airing schedule and direct download links
-* Built in media proxy that rewrites m3u8 playlists for in browser playback
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository=https://github.com/ayliee/Jinx)
 
-## Run locally
+1. Push this repo to GitHub and import it on Vercel (build settings on auto).
+2. Set env `PROXY_SECRET` to a long random string (fallback `jinx-proxy`).
+3. Open the site root: the docs page loads, `/player` opens the watch page.
 
-```bash
-npm start
-# http://localhost:8787
-```
-
-Open `http://localhost:8787/` for the documentation page.
-
-## Deploy on Vercel
-
-1. Push this folder to a Git repository.
-2. Import the repo at [vercel.com/new](https://vercel.com/new), keep defaults, deploy.
-3. The deployment URL serves the docs at `/` and the API under `/api`.
+Local: `npm start` then browse `http://localhost:8787`.
 
 ## Endpoints
 
-| Endpoint | Purpose |
+| Route | Returns |
 | --- | --- |
-| `GET /api/home` | Home page rails and charts |
-| `GET /api/random` | Random anime |
+| `GET /api/home` | Spotlight, latest episodes, trending, new releases, top charts |
+| `GET /api/latest` | Freshest episode feed, `?page=` paginated |
+| `GET /api/random` | One random anime |
 | `GET /api/search?q=` | Title search |
-| `GET /api/filter` | Advanced browse with filters and sorting |
-| `GET /api/az-list?letter=` | A to Z listing |
-| `GET /api/browse/:category/:value` | Genre, studio, producer, status listing |
-| `GET /api/schedule` | Weekly airing schedule |
-| `GET /api/anime/:slug` | Full anime metadata |
-| `GET /api/episodes/:slug` | Episode list |
-| `GET /api/servers?ids=` | Servers of one episode |
-| `GET /api/stream` | Playable HLS stream, subtitles, skip times |
-| `GET /api/downloads?mal=&episode=&timestamp=` | Download links |
-| `GET /api/proxy?u=` | CDN media proxy with playlist rewriting |
-| `GET /api/health` | Health check |
+| `GET /api/filter` | Full catalog filter with genre, season, status, sort |
+| `GET /api/az-list?letter=A` | A to Z listing |
+| `GET /api/schedule` | Weekly release schedule, `?tz=` and `?date=` |
+| `GET /api/anime/:slug` | Full metadata, seasons, related, reactions |
+| `GET /api/episodes/:slug` | Episode list with sub/dub flags and MAL ids |
+| `GET /api/servers?ids=` | Per episode server groups |
+| `GET /api/stream` | Resolved HLS, sources, subtitles, skip markers |
+| `GET /api/downloads?mal=&episode=&timestamp=` | Direct download links |
+| `GET /api/proxy?u=&s=` | Signed HLS proxy with m3u8 rewriting |
+| `GET /api/refresh` | Warms the hot feeds (auto called by cron) |
+| `GET /api/health` | Liveness probe |
+| `GET /player` | Custom watch page (hls.js powered) |
 
-Full parameter tables, response samples and an integration guide live on the docs page.
+Every response is `{ ok: true, data }` or `{ ok: false, error }`.
 
-## Project layout
+## Auto updates
 
-```
-api/            Vercel entrypoints, one thin handler per route
-src/core/       HTTP client, HTML helpers, response helpers
-src/scrapers/   Parsers and request chains per feature
-docs/index.html Documentation page with sidebar
-server.js       Local runner that mirrors the Vercel routes
-```
+Freshness layer keeps feeds current the moment the source publishes:
 
-## Configuration
+* Short TTL caches with stale while revalidate per endpoint (30s search, 60s home/latest, 2m episodes/schedule, 5m servers, 10m metadata, streams never cached).
+* `node server.js` warms home, latest and schedule every 60 seconds.
+* On Vercel the `vercel.json` cron hits `/api/refresh` every 5 minutes (Hobby plans may coerce the schedule to daily; the short TTL caches still keep everything fresh on demand).
 
-Optional environment variable:
+## Custom player
 
-* `PROXY_SECRET` sets the HMAC secret used to sign `/api/proxy` links. Set the same value on your deployment for a private signature.
+`/player?slug=...&ep=...` is a complete watch page styled after the source site: custom controls, skip intro/outro, auto play / auto skip / auto next, quality, speed, subtitle menu, SUB/DUB episode grid, server chips, resume position, watched marks and keyboard shortcuts. `?api=` points the page at any Jinx host.
 
-## Notes
+## Proxy secret
 
-* Node.js 18 or newer is required (global fetch).
-* All endpoints are GET, CORS open, cache friendly.
-* Educational project. Content belongs to its respective owners.
+`/api/proxy` only serves URLs signed by the API. Keep `PROXY_SECRET` identical across serverless instances so signatures stay valid. Rotate it to invalidate old media links. HLS playback is limited to the 1080p/720p/480p ladder; 4K renditions require a harder to break challenge token and are out of scope.
+
+## Source
+
+[github.com/ayliee/Jinx](https://github.com/ayliee/Jinx)

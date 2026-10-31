@@ -8,5 +8,5 @@ module.exports = route(async (req, res) => {
     version: "1.0.0",
     source: "anikototv.to",
     time: new Date().toISOString(),
-  });
+  }, 0);
 });

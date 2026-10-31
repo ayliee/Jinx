@@ -6,9 +6,12 @@ const { URL } = require("url");
 const routes = [
   ["GET", "/", "api/index.js"],
   ["GET", "/api", "api/index.js"],
+  ["GET", "/player", "api/player.js"],
   ["GET", "/api/health", "api/health.js"],
   ["GET", "/api/home", "api/home.js"],
+  ["GET", "/api/latest", "api/latest.js"],
   ["GET", "/api/random", "api/random.js"],
+  ["GET", "/api/refresh", "api/refresh.js"],
   ["GET", "/api/search", "api/search.js"],
   ["GET", "/api/filter", "api/filter.js"],
   ["GET", "/api/az-list", "api/az-list.js"],
@@ -26,7 +29,7 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
   req.query = Object.fromEntries(url.searchParams);
   for (const [method, path, file, params] of routes) {
-    if (req.method !== method && req.method !== "OPTIONS") continue;
+    if (req.method !== method && req.method !== "HEAD" && req.method !== "OPTIONS") continue;
     let match = null;
     if (path instanceof RegExp) {
       match = url.pathname.match(path);
@@ -43,3 +46,7 @@ const port = process.env.PORT || 8787;
 server.listen(port, "0.0.0.0", () => {
   console.log(`jinx api running at http://localhost:${port}`);
 });
+
+const { warmHot } = require("./src/core/warm");
+warmHot().catch(() => {});
+setInterval(() => warmHot().catch(() => {}), 60000);

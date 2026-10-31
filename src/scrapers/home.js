@@ -1,8 +1,10 @@
 "use strict";
 
 const { BASE, getText, getJson } = require("../core/http");
+const { cached } = require("../core/cache");
 const { text, section, count } = require("../core/html");
 const { parseCards } = require("./cards");
+const { getLatest, getTrending } = require("./latest");
 
 function parseSpotlight(html) {
   const region = section(html, 'id="hotest"', "</aside>");
@@ -42,12 +44,9 @@ function parseTopAnime(html) {
   return top;
 }
 
-async function getHome() {
+async function loadHome() {
   const html = await getText(`${BASE}/home`);
-  const [trending, latest] = await Promise.all([
-    getJson(`${BASE}/ajax/home/widget/trending?page=1`, { xhr: true }).then((r) => parseCards(r.result)),
-    getJson(`${BASE}/ajax/home/widget/updated-all?page=1`, { xhr: true }).then((r) => parseCards(r.result)),
-  ]);
+  const [trending, latest] = await Promise.all([getTrending(1), getLatest(1)]);
   const tables = parseTopTables(html);
   return {
     spotlight: parseSpotlight(html),
@@ -58,6 +57,10 @@ async function getHome() {
     completed: tables["completed"] || [],
     topAnime: parseTopAnime(html),
   };
+}
+
+function getHome() {
+  return cached("home", 60000, loadHome);
 }
 
 async function getRandom() {

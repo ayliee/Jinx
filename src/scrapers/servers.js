@@ -1,9 +1,14 @@
 "use strict";
 
 const { BASE, getJson } = require("../core/http");
+const { cached } = require("../core/cache");
 const { text, count, section } = require("../core/html");
 
-async function getServers(ids) {
+function getServers(ids) {
+  return cached(`servers:${ids}`, 300000, () => loadServers(ids));
+}
+
+async function loadServers(ids) {
   const json = await getJson(`${BASE}/ajax/server/list?servers=${encodeURIComponent(ids)}`, {
     xhr: true,
   });
