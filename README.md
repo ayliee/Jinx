@@ -40,7 +40,7 @@ Every response is `{ ok: true, data }` or `{ ok: false, error }`.
 Freshness layer keeps feeds current the moment the source publishes:
 
 * Short TTL caches with stale while revalidate per endpoint (30s search, 60s home/latest, 2m episodes/schedule, 5m servers, 10m metadata, streams never cached).
-* `node server.js` warms home, latest and schedule every 60 seconds.
+* `node local.js` warms home, latest and schedule every 60 seconds.
 * On Vercel the `vercel.json` cron hits `/api/refresh` daily (Hobby plans only allow daily crons). The short TTL caches above revalidate on demand, so freshness never depends on the cron.
 
 ## Custom player

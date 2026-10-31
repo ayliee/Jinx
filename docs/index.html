@@ -737,7 +737,7 @@ https://YOUR-DEPLOYMENT/player?slug=one-piece-1999&amp;ep=12&amp;type=dub</code>
   </div>
   <div class="step">
     <h4>Warming</h4>
-    <p>Self hosting with <code>node server.js</code> refreshes the hot feeds every sixty seconds. On Vercel, the <code>vercel.json</code> cron calls <a href="#get-refresh"><code>/api/refresh</code></a> once a day (Hobby plans only allow daily crons) and every request revalidates on demand through the TTL caches above, so a brand new episode is served within a minute of the next request.</p>
+    <p>Self hosting with <code>node local.js</code> refreshes the hot feeds every sixty seconds. On Vercel, the <code>vercel.json</code> cron calls <a href="#get-refresh"><code>/api/refresh</code></a> once a day (Hobby plans only allow daily crons) and every request revalidates on demand through the TTL caches above, so a brand new episode is served within a minute of the next request.</p>
     <pre><code>// force a warm right now
 fetch("https://YOUR-API/api/refresh")</code></pre>
   </div>

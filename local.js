@@ -43,14 +43,10 @@ const server = http.createServer((req, res) => {
 });
 
 const port = process.env.PORT || 8787;
+server.listen(port, "0.0.0.0", () => {
+  console.log(`jinx api running at http://localhost:${port}`);
+});
 
-// The local runner stays out of serverless builds and only starts on direct runs.
-if (require.main === module) {
-  server.listen(port, "0.0.0.0", () => {
-    console.log(`jinx api running at http://localhost:${port}`);
-  });
-
-  const { warmHot } = require("./src/core/warm");
-  warmHot().catch(() => {});
-  setInterval(() => warmHot().catch(() => {}), 60000);
-}
+const { warmHot } = require("./src/core/warm");
+warmHot().catch(() => {});
+setInterval(() => warmHot().catch(() => {}), 60000);
